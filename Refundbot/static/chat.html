@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RefundBot - E-Commerce Support Agent</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 800px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content {
+            flex: 1;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .header .user-context {
+            font-size: 14px;
+            opacity: 0.9;
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .context-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9fafb;
+        }
+
+        .message {
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.6;
+        }
+
+        .message-content strong {
+            font-weight: 600;
+        }
+
+        .message-content ul, .message-content ol {
+            margin: 8px 0;
+            padding-left: 24px;
+        }
+
+        .message-content li {
+            margin: 4px 0;
+        }
+
+        .message-content p {
+            margin: 8px 0;
+        }
+
+        .message-content p:first-child {
+            margin-top: 0;
+        }
+
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-content code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            border: 1px solid #e5e7eb;
+            color: #1f2937;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.system .message-content {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            color: #92400e;
+            max-width: 100%;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Feedback Widget Styles */
+        .feedback-widget {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-top: 1px solid #bbf7d0;
+            border-bottom: 1px solid #bbf7d0;
+        }
+
+        .feedback-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .feedback-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: #166534;
+        }
+
+        .feedback-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .feedback-btn {
+            padding: 8px 16px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .feedback-positive {
+            background: #10b981;
+            color: white;
+        }
+
+        .feedback-positive:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+
+        .feedback-negative {
+            background: #ef4444;
+            color: white;
+        }
+
+        .feedback-negative:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .feedback-widget.feedback-sent {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-color: #93c5fd;
+        }
+
+        .feedback-widget.feedback-sent .feedback-text {
+            color: #1e40af;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        #userInput:focus {
+            border-color: #667eea;
+        }
+
+        #sendBtn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.2s;
+        }
+
+        #sendBtn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        #sendBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #9ca3af;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .nav-tabs {
+            display: flex;
+            padding: 0 20px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .nav-tab:hover {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <h1>🤖 RefundBot</h1>
+                <div class="user-context" id="userContext"></div>
+            </div>
+            <div class="status">
+                <span class="status-dot"></span>
+                <span id="sessionId">Session: ---</span>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="window.location.href='index.html'">Chat</button>
+            <button class="nav-tab" onclick="window.location.href='dashboard.html'">Dashboard</button>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message system" id="welcomeMessage">
+                <div class="message-content">
+                    👋 Welcome! I'm your AI customer support agent. I can help with order tracking, returns, and refunds up to $500 autonomously.
+                </div>
+            </div>
+        </div>
+
+        <!-- P0 Metric: CSAT Feedback Widget -->
+        <div class="feedback-widget" id="feedbackWidget" style="display: none;">
+            <div class="feedback-content">
+                <span class="feedback-text">Was this helpful?</span>
+                <div class="feedback-buttons">
+                    <button class="feedback-btn feedback-positive" onclick="sendFeedback('positive')">
+                        👍 Yes
+                    </button>
+                    <button class="feedback-btn feedback-negative" onclick="sendFeedback('negative')">
+                        👎 No
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <input 
+                type="text" 
+                id="userInput" 
+                placeholder="Type your message... (e.g., 'I want a refund for order ORD-12345')"
+                onkeypress="handleKeyPress(event)"
+            />
+            <button id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const userEmail = urlParams.get('email');
+        const userName = urlParams.get('name');
+        const orderId = urlParams.get('order');
+        const productName = urlParams.get('product');
+
+        // Generate session ID with user context
+        let sessionId = userEmail ? `${userEmail.split('@')[0]}-${Date.now()}` : 'session-' + Date.now();
+        document.getElementById('sessionId').textContent = 'Session: ' + sessionId.substring(0, 18) + '...';
+
+        // Display user context
+        if (userName && userEmail) {
+            const contextHtml = `
+                <div class="context-item">👤 ${userName}</div>
+                <div class="context-item">📧 ${userEmail}</div>
+                ${orderId ? `<div class="context-item">📦 ${orderId}</div>` : ''}
+            `;
+            document.getElementById('userContext').innerHTML = contextHtml;
+
+            // Update welcome message
+            const welcomeMsg = orderId 
+                ? `👋 Hi ${userName}! I can help you with your order <strong>${orderId}</strong> (${productName}). What can I do for you today?`
+                : `👋 Hi ${userName}! I can help with any of your orders. What can I do for you today?`;
+            document.getElementById('welcomeMessage').querySelector('.message-content').innerHTML = welcomeMsg;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Disable input
+            input.disabled = true;
+            sendBtn.disabled = true;
+            input.value = '';
+
+            // Add user message
+            addMessage('user', message);
+
+            // Show typing indicator
+            const typingId = addTypingIndicator();
+
+            try {
+                // Build request with user context
+                const requestBody = {
+                    session_id: sessionId,
+                    message: message
+                };
+
+                // Add user context if available
+                if (userEmail) {
+                    requestBody.customer_email = userEmail;
+                }
+                if (orderId) {
+                    requestBody.order_id = orderId;
+                }
+
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+
+                // Remove typing indicator
+                removeTypingIndicator(typingId);
+
+                // Add assistant response
+                addMessage('assistant', data.response);
+                
+                // Show feedback widget after assistant response
+                showFeedbackWidget();
+
+            } catch (error) {
+                removeTypingIndicator(typingId);
+                addMessage('system', '⚠️ Error connecting to server. Please try again.');
+                console.error('Error:', error);
+            }
+
+            // Re-enable input
+            input.disabled = false;
+            sendBtn.disabled = false;
+            input.focus();
+        }
+
+        function addMessage(role, content) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            // Render markdown for assistant messages
+            if (role === 'assistant') {
+                contentDiv.innerHTML = formatMarkdown(content);
+            } else {
+                contentDiv.textContent = content;
+            }
+            
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function formatMarkdown(text) {
+            // Simple markdown parser for common patterns
+            let html = text
+                // Bold: **text** or __text__
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+                // Inline code: `text`
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                // Line breaks
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+            
+            // Bullet lists: - item or * item
+            const lines = text.split('\n');
+            let inList = false;
+            let result = [];
+            
+            for (let line of lines) {
+                const bulletMatch = line.match(/^[\s]*[-*]\s+(.+)$/);
+                
+                if (bulletMatch) {
+                    if (!inList) {
+                        result.push('<ul>');
+                        inList = true;
+                    }
+                    let item = bulletMatch[1]
+                        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                        .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+                        .replace(/`([^`]+)`/g, '<code>$1</code>');
+                    result.push(`<li>${item}</li>`);
+                } else {
+                    if (inList) {
+                        result.push('</ul>');
+                        inList = false;
+                    }
+                    if (line.trim()) {
+                        let formatted = line
+                            .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                            .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+                            .replace(/`([^`]+)`/g, '<code>$1</code>');
+                        result.push(`<p>${formatted}</p>`);
+                    }
+                }
+            }
+            
+            if (inList) {
+                result.push('</ul>');
+            }
+            
+            return result.join('');
+        }
+
+        function addTypingIndicator() {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.id = 'typing-indicator';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+            
+            messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            return 'typing-indicator';
+        }
+
+        function removeTypingIndicator(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.remove();
+            }
+        }
+
+        // P0 Metric: CSAT Feedback Functions
+        function showFeedbackWidget() {
+            const widget = document.getElementById('feedbackWidget');
+            widget.style.display = 'block';
+            widget.classList.remove('feedback-sent');
+        }
+
+        async function sendFeedback(rating) {
+            const widget = document.getElementById('feedbackWidget');
+            const feedbackText = widget.querySelector('.feedback-text');
+            const buttons = widget.querySelector('.feedback-buttons');
+            
+            try {
+                // Send feedback to backend
+                const response = await fetch(`/feedback?session_id=${encodeURIComponent(sessionId)}&rating=${rating}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    // Update UI to show success
+                    widget.classList.add('feedback-sent');
+                    feedbackText.textContent = '✅ Thank you for your feedback!';
+                    buttons.style.display = 'none';
+                    
+                    // Hide widget after 3 seconds
+                    setTimeout(() => {
+                        widget.style.display = 'none';
+                        buttons.style.display = 'flex'; // Reset for next time
+                    }, 3000);
+                    
+                    // Record conversation outcome as resolved
+                    await fetch(`/conversation-outcome?session_id=${encodeURIComponent(sessionId)}&outcome=resolved`, {
+                        method: 'POST'
+                    });
+                } else {
+                    console.error('Failed to record feedback');
+                }
+            } catch (error) {
+                console.error('Error sending feedback:', error);
+            }
+        }
+    </script>
+</body>
+</html>

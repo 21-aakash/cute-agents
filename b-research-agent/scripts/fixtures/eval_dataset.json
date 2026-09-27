@@ -1,0 +1,14 @@
+[
+  {
+    "question": "What is the codename for Project Aurora?",
+    "ground_truth": "The codename for Project Aurora is SILVERFOX-42."
+  },
+  {
+    "question": "Which project uses the codename SILVERFOX-42?",
+    "ground_truth": "SILVERFOX-42 is the codename for Project Aurora."
+  },
+  {
+    "question": "Summarize what the E2E knowledge base fixture document says about Project Aurora.",
+    "ground_truth": "Project Aurora has codename SILVERFOX-42 and is used in automated tests for upload, indexing, and retrieval."
+  }
+]

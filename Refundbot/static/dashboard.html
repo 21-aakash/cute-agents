@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RefundBot Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f3f4f6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .nav-tabs {
+            display: flex;
+            padding: 0 40px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .nav-tab {
+            padding: 16px 24px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .nav-tab:hover {
+            color: #667eea;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 40px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .metric-card.metric-critical {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .metric-change {
+            font-size: 13px;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .metric-change.negative {
+            color: #ef4444;
+        }
+
+        .chart-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .chart-section h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .tool-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .success-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .success-badge.high {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .success-badge.medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .success-badge.low {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .tool-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+        }
+
+        .tool-stat {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tool-stat-label {
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .tool-stat-value {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 12px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-info {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .activity-meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .activity-status {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .activity-status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .activity-status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Analytics Dashboard</h1>
+        <p>Real-time agent performance and observability metrics</p>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="nav-tab" onclick="window.location.href='index.html'">Chat</button>
+        <button class="nav-tab active" onclick="window.location.href='dashboard.html'">Dashboard</button>
+    </div>
+
+    <div class="container">
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Loading analytics...</p>
+        </div>
+
+        <div id="content" style="display: none;">
+            <!-- Key Metrics -->
+            <div class="metrics-grid" id="metricsGrid"></div>
+
+            <!-- Performance Chart -->
+            <div class="chart-section">
+                <h2>📈 Agent Performance (Last 24h)</h2>
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Tool Statistics -->
+            <div class="chart-section">
+                <h2>🔧 Tool Usage & Success Rates</h2>
+                <div class="tools-grid" id="toolsGrid"></div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="chart-section">
+                <h2>⚡ Recent Activity</h2>
+                <div class="activity-list" id="activityList"></div>
+            </div>
+        </div>
+    </div>
+
+    <button class="refresh-btn" onclick="loadDashboard()">
+        <span>🔄</span>
+        <span>Refresh</span>
+    </button>
+
+    <script>
+        let performanceChart = null;
+
+        async function loadDashboard() {
+            try {
+                // Show loading
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('content').style.display = 'none';
+
+                // Fetch analytics data
+                const [summary, timeseries] = await Promise.all([
+                    fetch('/analytics').then(r => r.json()),
+                    fetch('/analytics/timeseries?hours=24').then(r => r.json())
+                ]);
+
+                // Store production metrics globally
+                window.productionMetrics = summary.production_metrics || {
+                    resolution_rate: 0,
+                    escalation_rate: 0,
+                    csat_score: 0,
+                    cost_per_conversation: 0,
+                    error_rate: 0,
+                    refund_approval_rate: 0,
+                    avg_conversation_length: 0
+                };
+
+                // Render metrics
+                renderMetrics(summary.overview, summary.sessions);
+
+                // Render charts
+                renderPerformanceChart(timeseries);
+
+                // Render tools
+                renderTools(summary.tools);
+
+                // Render activity
+                renderActivity(summary.recent_activity);
+
+                // Show content
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                document.getElementById('loading').innerHTML = '<p style="color: #ef4444;">⚠️ Error loading analytics</p>';
+            }
+        }
+
+        function renderMetrics(overview, sessions) {
+            const prodMetrics = window.productionMetrics || {}; // Will be set from API
+            
+            const metrics = [
+                // P0 Critical Metrics
+                { label: 'Resolution Rate', value: prodMetrics.resolution_rate + '%', change: null, critical: true },
+                { label: 'Escalation Rate', value: prodMetrics.escalation_rate + '%', change: null, critical: true },
+                { label: 'CSAT Score', value: prodMetrics.csat_score + '%', change: null, critical: true },
+                { label: 'Cost/Conv', value: '$' + prodMetrics.cost_per_conversation, change: null, critical: true },
+                { label: 'Error Rate', value: prodMetrics.error_rate + '%', change: null, critical: true },
+                // P1 Important Metrics
+                { label: 'Refund Approval', value: prodMetrics.refund_approval_rate + '%', change: null },
+                { label: 'Avg Conv Length', value: prodMetrics.avg_conversation_length + ' turns', change: null },
+                // Original Metrics
+                { label: 'Success Rate', value: overview.success_rate + '%', change: null },
+                { label: 'Avg Latency', value: Math.round(overview.avg_latency_ms) + 'ms', change: null },
+                { label: 'Tool Calls', value: overview.total_tool_calls, change: null },
+                { label: 'Active Sessions (24h)', value: sessions.active_24h, change: null },
+            ];
+
+            const grid = document.getElementById('metricsGrid');
+            grid.innerHTML = metrics.map(m => `
+                <div class="metric-card ${m.critical ? 'metric-critical' : ''}">
+                    <div class="metric-label">${m.label}${m.critical ? ' ⚠️' : ''}</div>
+                    <div class="metric-value">${m.value}</div>
+                    ${m.change ? `<div class="metric-change">${m.change}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderPerformanceChart(data) {
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            
+            if (performanceChart) {
+                performanceChart.destroy();
+            }
+
+            performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.hours,
+                    datasets: [
+                        {
+                            label: 'Agent Runs',
+                            data: data.runs,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Successful Runs',
+                            data: data.success,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Tool Calls',
+                            data: data.tool_calls,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTools(tools) {
+            const toolsGrid = document.getElementById('toolsGrid');
+            
+            const toolsArray = Object.entries(tools).map(([name, stats]) => ({
+                name,
+                ...stats
+            }));
+
+            toolsGrid.innerHTML = toolsArray.map(tool => {
+                const badgeClass = tool.success_rate >= 90 ? 'high' : 
+                                  tool.success_rate >= 70 ? 'medium' : 'low';
+                
+                return `
+                    <div class="tool-card">
+                        <div class="tool-header">
+                            <div class="tool-name">${tool.name}</div>
+                            <div class="success-badge ${badgeClass}">${tool.success_rate}%</div>
+                        </div>
+                        <div class="tool-stats">
+                            <div class="tool-stat">
+                                <div class="tool-stat-label">Total Calls</div>
+                                <div class="tool-stat-value">${tool.total}</div>
+                            </div>
+                            <div class="tool-stat">
+                                <div class="tool-stat-label">Success</div>
+                                <div class="tool-stat-value">${tool.success}</div>
+                            </div>
+                            <div class="tool-stat">
+                                <div class="tool-stat-label">Avg Latency</div>
+                                <div class="tool-stat-value">${tool.avg_latency}ms</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderActivity(activity) {
+            const list = document.getElementById('activityList');
+            
+            const runs = activity.last_10_runs.slice().reverse();
+            
+            if (runs.length === 0) {
+                list.innerHTML = '<p style="text-align: center; padding: 40px; color: #6b7280;">No recent activity</p>';
+                return;
+            }
+
+            list.innerHTML = runs.map(run => {
+                const time = new Date(run.timestamp).toLocaleTimeString();
+                const statusClass = run.success ? 'success' : 'error';
+                const statusText = run.success ? 'Success' : 'Failed';
+                
+                return `
+                    <div class="activity-item">
+                        <div class="activity-info">
+                            <div class="activity-title">Agent Run - ${run.session_id.substring(0, 12)}...</div>
+                            <div class="activity-meta">${time} • ${run.iterations} iterations • ${Math.round(run.latency_ms)}ms</div>
+                        </div>
+                        <div class="activity-status ${statusClass}">${statusText}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load dashboard on page load
+        loadDashboard();
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadDashboard, 30000);
+    </script>
+</body>
+</html>
