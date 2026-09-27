@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agent Memory Manager — Live Arena & Telemetry</title>
-  <link rel="stylesheet" href="/static/style.css?v=2">
+  <link rel="stylesheet" href="/static/style.css?v=3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -29,17 +29,30 @@
   <!-- Controls Bar -->
   <div class="controls-bar">
     <div class="scenario-select-area">
-      <label for="scenarioSelect">Select Arena Scenario:</label>
+      <label for="scenarioSelect">Scenario:</label>
       <select id="scenarioSelect">
         <option value="postgres_port_trap">1. PostgreSQL Port Trap (Failure Fingerprinting)</option>
         <option value="forbidden_legacy_dir">2. Forbidden Legacy Directory (Constraint Guardian)</option>
       </select>
+      
+      <label for="modeSelect" style="margin-left: 0.75rem;">Mode:</label>
+      <select id="modeSelect">
+        <option value="simulated">⚡ Simulation Arena (Instant)</option>
+        <option value="real_llm">🧠 Real LLM Calls (Groq Qwen-27B)</option>
+      </select>
     </div>
+
     <div class="btn-group">
       <button id="btnStep" class="btn btn-secondary">Next Step &rarr;</button>
-      <button id="btnRunAll" class="btn btn-primary">&#9654; Run Full Simulation</button>
-      <button id="btnReset" class="btn btn-secondary">&#8635; Reset Arena</button>
+      <button id="btnRunAll" class="btn btn-primary">&#9654; Run Full Arena</button>
+      <button id="btnSaveLog" class="btn btn-secondary" title="Save full execution trace as JSON to logs/arena_runs/">💾 Save Run JSON</button>
+      <button id="btnReset" class="btn btn-secondary">&#8635; Reset</button>
     </div>
+  </div>
+
+  <!-- Saved Log Notification Bar -->
+  <div id="saveNotification" style="display: none; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #a7f3d0; padding: 0.6rem 1rem; border-radius: 10px; margin-bottom: 1.25rem; font-size: 0.82rem; font-family: var(--font-mono);">
+    <!-- Path will appear here -->
   </div>
 
   <!-- Main Grid -->
@@ -131,20 +144,13 @@
         </div>
       </div>
 
-      <!-- Live LLM Playground Tester -->
+      <!-- Saved JSON Runs on Filesystem -->
       <div class="card">
         <div class="card-title">
-          <span>Direct LLM Inference Test</span>
+          <span>Local Saved Runs (<code style="font-size: 0.72rem; color: #a5b4fc;">logs/arena_runs/</code>)</span>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
-          <select id="llmProvider">
-            <option value="groq">Groq (Llama 3.3 70B - Fast)</option>
-            <option value="gemini">Google Gemini 1.5 Flash</option>
-            <option value="openrouter">OpenRouter (Claude / Llama)</option>
-          </select>
-          <input type="text" id="livePromptInput" placeholder="Test command or prompt..." style="background: #111827; border: 1px solid var(--border-glass); padding: 0.5rem; border-radius: 6px; color: white; font-size: 0.8rem;">
-          <button id="btnSendLLM" class="btn btn-primary" style="justify-content: center;">Send with Companion</button>
-          <div id="llmOutput" style="font-family: var(--font-mono); font-size: 0.72rem; color: #94a3b8; max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 6px;"></div>
+        <div id="savedLogsList" style="max-height: 120px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.72rem; display: flex; flex-direction: column; gap: 4px;">
+          <div style="color: var(--text-dim);">Loading saved run files...</div>
         </div>
       </div>
 
@@ -152,6 +158,6 @@
 
   </div>
 
-  <script src="/static/app.js?v=2"></script>
+  <script src="/static/app.js?v=3"></script>
 </body>
 </html>

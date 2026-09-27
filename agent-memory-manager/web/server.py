@@ -1,12 +1,14 @@
 """
 FastAPI Backend for Agent Memory Manager Web Dashboard & Arena.
-Serves static UI, handles real-time arena execution, and integrates with LLM providers (Groq Qwen-27B / GPT-OSS).
+Supports deterministic simulation, real live LLM execution via Groq Qwen-27B,
+and local JSON run logging to disk.
 """
 
 from __future__ import annotations
 import os
 import sys
 import json
+import time
 import httpx
 from pathlib import Path
 from typing import Dict, Any, List, Optional
@@ -28,6 +30,10 @@ if str(ARENA_DIR) not in sys.path:
 from companion.engine import ProactiveMemoryCompanion
 from companion.models import DecisionType
 from scenarios import get_postgres_port_trap_scenario, get_forbidden_legacy_dir_scenario
+
+# Logs Directory for persistent JSON run files
+LOGS_DIR = PROJECT_ROOT / "logs" / "arena_runs"
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Load API keys from use-cases/.env
 ENV_FILE = PROJECT_ROOT / "use-cases" / ".env"
@@ -75,6 +81,28 @@ class StepEvaluationRequest(BaseModel):
 class ResetSessionRequest(BaseModel):
     session_id: str
     constraints: List[str] = []
+
+
+class SaveRunLogRequest(BaseModel):
+    session_id: str
+    scenario_id: str
+    scenario_name: str
+    timestamp: float = 0.0
+    vanilla_trajectory: List[Dict[str, Any]]
+    companion_trajectory: List[Dict[str, Any]]
+    telemetry: Dict[str, Any]
+    memory_bank: Dict[str, Any]
+
+
+class RealLLMTurnRequest(BaseModel):
+    session_id: str
+    turn: int
+    scenario_id: str
+    task_goal: str
+    constraints: List[str] = []
+    vanilla_history: List[Dict[str, str]] = []
+    companion_history: List[Dict[str, str]] = []
+    planned_intent: str = ""
 
 
 class LiveLLMRequest(BaseModel):
@@ -179,10 +207,165 @@ async def evaluate_step(req: StepEvaluationRequest):
     }
 
 
+@app.post("/api/real-llm-turn")
+async def execute_real_llm_turn(req: RealLLMTurnRequest):
+    """
+    Executes actual dual-agent LLM inference turn using Groq Qwen-27B:
+    1. Vanilla Agent: Receives raw accumulated history without companion.
+    2. Companion Agent: Proactive policy check -> Injects targeted reminder -> Model generates corrected action.
+    """
+    groq_key = API_KEYS.get("groq", "")
+    companion = get_or_create_companion(req.session_id, req.constraints)
+
+    # Evaluate Companion Policy for Turn
+    decision = companion.evaluate_intervention(turn=req.turn, planned_action=req.planned_intent)
+
+    vanilla_output = ""
+    companion_output = ""
+
+    if not groq_key:
+        return {
+            "error": "Groq API key not found in use-cases/.env",
+            "vanilla_llm": f"[Simulation Vanilla]: Attempting action for {req.planned_intent}",
+            "companion_llm": f"[Simulation Companion]: Executed safely conditioned on memory.",
+            "decision": decision.model_dump(),
+            "memory_bank": companion.memory_bank.model_dump()
+        }
+
+    # Prompt constructing
+    vanilla_prompt = (
+        f"You are a DevOps autonomous agent. Goal: {req.task_goal}\n"
+        f"Current Step Intent: {req.planned_intent}\n"
+        f"Generate the exact terminal command to execute."
+    )
+
+    companion_prompt = vanilla_prompt
+    if decision.decision == DecisionType.INJECT and decision.reminder:
+        companion_prompt = (
+            f"[PROACTIVE MEMORY COMPANION INJECTION]\n"
+            f"{decision.reminder}\n\n"
+            f"{vanilla_prompt}"
+        )
+
+    try:
+        async with httpx.AsyncClient(timeout=25.0) as client:
+            # 1. Call for Vanilla Agent
+            v_resp = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {groq_key}"},
+                json={
+                    "model": "qwen/qwen3.8-27b",
+                    "messages": [{"role": "user", "content": vanilla_prompt}],
+                    "temperature": 0.2,
+                    "max_tokens": 120
+                }
+            )
+            if v_resp.status_code == 200:
+                vanilla_output = v_resp.json()["choices"][0]["message"]["content"].strip()
+            else:
+                vanilla_output = f"[Groq Error {v_resp.status_code}]"
+
+            # 2. Call for Companion Agent
+            c_resp = await client.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={"Authorization": f"Bearer {groq_key}"},
+                json={
+                    "model": "qwen/qwen3.8-27b",
+                    "messages": [{"role": "user", "content": companion_prompt}],
+                    "temperature": 0.2,
+                    "max_tokens": 120
+                }
+            )
+            if c_resp.status_code == 200:
+                companion_output = c_resp.json()["choices"][0]["message"]["content"].strip()
+            else:
+                companion_output = f"[Groq Error {c_resp.status_code}]"
+
+    except Exception as e:
+        vanilla_output = f"[Inference Error]: {str(e)}"
+        companion_output = f"[Inference Error]: {str(e)}"
+
+    # Ingest output into companion
+    companion.ingest_turn(turn=req.turn, action=req.planned_intent, observation=companion_output)
+
+    return {
+        "turn": req.turn,
+        "decision": decision.model_dump(),
+        "vanilla_llm": vanilla_output,
+        "companion_llm": companion_output,
+        "memory_bank": companion.memory_bank.model_dump(),
+        "telemetry": companion.store.get_telemetry_summary(req.session_id)
+    }
+
+
+@app.post("/api/save-run-log")
+async def save_run_log(req: SaveRunLogRequest):
+    """
+    Saves complete arena execution trace to local JSON file on disk in logs/arena_runs/.
+    """
+    ts = int(req.timestamp or time.time())
+    safe_name = req.scenario_id.replace(" ", "_")
+    filename = f"run_{safe_name}_{ts}.json"
+    filepath = LOGS_DIR / filename
+
+    log_data = {
+        "run_id": f"{safe_name}_{ts}",
+        "scenario_id": req.scenario_id,
+        "scenario_name": req.scenario_name,
+        "timestamp": ts,
+        "saved_at_iso": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(ts)),
+        "file_path": str(filepath),
+        "telemetry": req.telemetry,
+        "memory_bank_final": req.memory_bank,
+        "vanilla_trajectory": req.vanilla_trajectory,
+        "companion_trajectory": req.companion_trajectory
+    }
+
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(log_data, f, indent=2)
+
+    return {
+        "status": "saved",
+        "filename": filename,
+        "local_path": str(filepath),
+        "relative_path": f"logs/arena_runs/{filename}"
+    }
+
+
+@app.get("/api/run-logs")
+async def list_run_logs():
+    """Returns list of all saved JSON run files."""
+    files = []
+    for p in sorted(LOGS_DIR.glob("*.json"), reverse=True):
+        try:
+            with open(p, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                files.append({
+                    "filename": p.name,
+                    "scenario": data.get("scenario_name", "Unknown"),
+                    "saved_at": data.get("saved_at_iso", ""),
+                    "silence_ratio": data.get("telemetry", {}).get("silence_ratio", "N/A"),
+                    "loops": data.get("telemetry", {}).get("loops_intercepted", 0)
+                })
+        except Exception:
+            files.append({"filename": p.name, "scenario": "Corrupt/Unreadable", "saved_at": ""})
+    return files
+
+
+@app.get("/api/run-logs/{filename}")
+async def get_run_log_file(filename: str):
+    """Fetches a specific saved run log file."""
+    filepath = LOGS_DIR / filename
+    if not filepath.exists():
+        raise HTTPException(status_code=404, detail="Run log file not found.")
+    with open(filepath, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 @app.post("/api/live-llm")
 async def run_live_llm(req: LiveLLMRequest):
     """
-    Runs live LLM generation (using Groq Qwen-27B / GPT-OSS) with Proactive Memory Companion injection.
+    Runs direct live LLM generation with Proactive Memory Companion injection.
     """
     groq_key = API_KEYS.get("groq", "")
     companion = get_or_create_companion(req.session_id)
