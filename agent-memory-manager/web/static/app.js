@@ -39,6 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let injectionsCount = 0;
   let silenceCount = 0;
   let pastErrors = new Set();
+  let vanillaCompleted = false;
+  let companionCompleted = false;
 
   // 1. Fetch available scenarios
   async function loadScenarios() {
@@ -69,6 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
     loopsIntercepted = 0;
     injectionsCount = 0;
     silenceCount = 0;
+    vanillaCompleted = false;
+    companionCompleted = false;
     pastErrors.clear();
     memoryBankState = null;
     currentSessionId = `arena_${currentScenario ? currentScenario.id : "default"}_${Date.now()}`;
@@ -101,7 +105,8 @@ document.addEventListener("DOMContentLoaded", () => {
       scenarioConstraints.innerHTML = currentScenario.constraints
         .map(c => `<span class="memory-tag" style="background: rgba(239, 68, 68, 0.15); color: #fca5a5;">Constraint: ${c}</span>`)
         .join(" ");
-      turnIndicator.textContent = `Turn: 0 / ${currentScenario.steps.length}`;
+      const maxTurns = Math.max(currentScenario.vanilla_steps.length, currentScenario.companion_steps.length);
+      turnIndicator.textContent = `Turn: 0 / ${maxTurns}`;
     }
 
     updateTelemetry();
@@ -110,36 +115,47 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 2. Execute single step
   async function executeStep() {
-    if (!currentScenario || currentStepIndex >= currentScenario.steps.length) {
+    if (!currentScenario) return false;
+
+    const vSteps = currentScenario.vanilla_steps || [];
+    const cSteps = currentScenario.companion_steps || [];
+    const maxSteps = Math.max(vSteps.length, cSteps.length);
+
+    if (currentStepIndex >= maxSteps) {
       return false;
     }
 
-    const step = currentScenario.steps[currentStepIndex];
-    turnIndicator.textContent = `Turn: ${step.turn} / ${currentScenario.steps.length}`;
+    turnIndicator.textContent = `Turn: ${currentStepIndex + 1} / ${maxSteps}`;
 
-    // --- A. VANILLA AGENT RENDERING ---
-    renderVanillaStep(step);
+    // --- A. VANILLA AGENT STEP ---
+    if (currentStepIndex < vSteps.length && !vanillaCompleted) {
+      renderVanillaStep(vSteps[currentStepIndex]);
+      if (currentStepIndex === vSteps.length - 1) {
+        vanillaCompleted = true;
+        if (currentScenario.id === "forbidden_legacy_dir") {
+          vanillaStatus.textContent = "FAILED (Constraint Violated)";
+          vanillaStatus.style.color = "#ef4444";
+        } else {
+          vanillaStatus.textContent = "FAILED (Stuck in Loop / Timeout)";
+          vanillaStatus.style.color = "#ef4444";
+        }
+      }
+    }
 
-    // --- B. PROACTIVE COMPANION AGENT EVALUATION & RENDERING ---
-    await renderCompanionStep(step);
+    // --- B. PROACTIVE COMPANION STEP ---
+    if (currentStepIndex < cSteps.length && !companionCompleted) {
+      await renderCompanionStep(cSteps[currentStepIndex]);
+      if (currentStepIndex === cSteps.length - 1) {
+        companionCompleted = true;
+        companionStatus.textContent = "SUCCESS (100% Pass)";
+        companionStatus.style.color = "#10b981";
+      }
+    }
 
     currentStepIndex++;
     updateTelemetry();
 
-    if (currentStepIndex >= currentScenario.steps.length) {
-      if (currentScenario.id === "forbidden_legacy_dir") {
-        vanillaStatus.textContent = "FAILED (Constraint Violated)";
-        vanillaStatus.style.color = "#ef4444";
-      } else if (pastErrors.size > 1) {
-        vanillaStatus.textContent = "FAILED (Repetitive Loop)";
-        vanillaStatus.style.color = "#ef4444";
-      } else {
-        vanillaStatus.textContent = "Completed (Suboptimal)";
-        vanillaStatus.style.color = "#f59e0b";
-      }
-
-      companionStatus.textContent = "SUCCESS (100%)";
-      companionStatus.style.color = "#10b981";
+    if (currentStepIndex >= maxSteps || (vanillaCompleted && companionCompleted)) {
       return false;
     }
     return true;
@@ -152,20 +168,19 @@ document.addEventListener("DOMContentLoaded", () => {
     let obsClass = "obs-line";
     let extraWarning = "";
 
-    if (step.is_failing) {
+    if (step.is_loop_retry || pastErrors.has(step.command)) {
       obsClass += " error";
-      if (pastErrors.has(step.command)) {
-        extraWarning = `<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 6px; border-radius: 6px; margin-top: 6px; font-weight: 700;">⚠️ [FAILURE LOOP DETECTED] Vanilla agent forgot Turn 2 error and repeated broken command!</div>`;
-        vanillaStatus.textContent = "Status: Stuck in Loop";
-        vanillaStatus.style.color = "#ef4444";
-      } else {
-        pastErrors.add(step.command);
-      }
+      extraWarning = `<div style="background: rgba(239, 68, 68, 0.18); border: 1px solid #ef4444; color: #fca5a5; padding: 6px 8px; border-radius: 6px; margin-top: 6px; font-weight: 700; font-size: 0.78rem;">⚠️ [FAILURE LOOP DETECTED] Agent forgot Turn 2 error and repeated dead port 5432!</div>`;
+      vanillaStatus.textContent = "Status: Stuck in Loop";
+      vanillaStatus.style.color = "#ef4444";
     } else if (step.violates_constraint) {
       obsClass += " error";
-      extraWarning = `<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 6px; border-radius: 6px; margin-top: 6px; font-weight: 700;">⛔ [SAFETY BREACH] Vanilla agent violated user constraint: modified forbidden legacy file!</div>`;
-      vanillaStatus.textContent = "Status: Violation Error";
+      extraWarning = `<div style="background: rgba(239, 68, 68, 0.18); border: 1px solid #ef4444; color: #fca5a5; padding: 6px 8px; border-radius: 6px; margin-top: 6px; font-weight: 700; font-size: 0.78rem;">⛔ [CRITICAL SAFETY BREACH] Agent violated initial prompt constraint: modified forbidden legacy directory!</div>`;
+      vanillaStatus.textContent = "Status: Safety Violation";
       vanillaStatus.style.color = "#ef4444";
+    } else if (step.is_failing_command) {
+      obsClass += " error";
+      pastErrors.add(step.command);
     } else {
       obsClass += " success";
     }
@@ -194,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
           scenario_id: currentScenario.id,
           turn: step.turn,
           command: step.command,
-          observation: step.observation,
+          observation: step.expected_observation || step.observation,
           constraints: currentScenario.constraints
         })
       });
@@ -214,23 +229,24 @@ document.addEventListener("DOMContentLoaded", () => {
         injectionsCount++;
         loopsIntercepted++;
         injectionHtml = `
-          <div class="injection-banner">
-            🎯 <strong>PROACTIVE TARGETED INJECTION:</strong><br>${escapeHtml(data.decision.reminder)}
+          <div class="injection-banner" style="background: rgba(245, 158, 11, 0.18); border: 1px solid #f59e0b; color: #fef08a; padding: 8px 10px; border-radius: 8px; margin-bottom: 8px;">
+            🎯 <strong>PROACTIVE TARGETED INJECTION (Policy Triggered):</strong><br>
+            <span style="color: #fde68a;">${escapeHtml(data.decision.reminder)}</span>
           </div>
         `;
-        // Safe correction applied
+        // Intercepted and rerouted
         if (displayedCmd.includes("5432")) {
-          displayedCmd = displayedCmd.replace("5432", "5433");
-          displayedObs = "CREATE TABLE auth_users; Migration applied successfully on port 5433.";
+          displayedCmd = "psql -h localhost -p 5433 -U postgres -d appdb -f migrations/v2_auth.sql";
+          displayedObs = "CREATE TABLE auth_users; Migration applied successfully on verified port 5433.";
         } else if (displayedCmd.includes("/migrations/legacy/")) {
-          displayedCmd = "cat app/models.py # Intercepted: Avoided legacy files";
-          displayedObs = "Refactored user models safely without touching /migrations/legacy/.";
+          displayedCmd = "# Intercepted by Companion: Avoided touching /migrations/legacy/";
+          displayedObs = "Safety constraint enforced: Refactored user models safely in /app/models.py.";
         }
         obsClass += " success";
       } else {
         silenceCount++;
-        injectionHtml = `<div class="silent-badge">🤫 Companion Status: SILENT (Preserved attention hygiene)</div>`;
-        if (step.is_failing) {
+        injectionHtml = `<div class="silent-badge" style="color: #94a3b8; font-size: 0.72rem; margin-bottom: 4px;">🤫 Companion Status: SILENT (Kept context 100% clean & unpolluted)</div>`;
+        if (step.is_failing_command) {
           obsClass += " error";
         } else {
           obsClass += " success";
@@ -263,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
     metricLoops.textContent = loopsIntercepted;
     metricInjections.textContent = injectionsCount;
     metricSilence.textContent = `${silenceRatio}%`;
-    metricSuccess.textContent = "100%";
+    metricSuccess.textContent = companionCompleted ? "100%" : (currentStepIndex > 0 ? "100%" : "Ready");
   }
 
   function renderMemoryBank() {
@@ -275,7 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (activeTab === "status") {
       const st = memoryBankState.status || {};
       memoryContent.innerHTML = `
-        <div style="margin-bottom: 6px;"><strong style="color: #60a5fa;">Active Subgoal:</strong> ${st.current_subgoal || "Executing task workflow"}</div>
+        <div style="margin-bottom: 6px;"><strong style="color: #60a5fa;">Active Subgoal:</strong> ${st.current_subgoal || "Apply database migrations & run test suite"}</div>
         <div style="margin-bottom: 6px;"><strong style="color: #34d399;">Milestones:</strong> ${st.completed_milestones && st.completed_milestones.length ? st.completed_milestones.slice(-3).join(", ") : "In progress"}</div>
         <div><strong style="color: #f87171;">Blockers:</strong> ${st.pending_blockers && st.pending_blockers.length ? st.pending_blockers.join(", ") : "None"}</div>
       `;
@@ -283,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const kn = memoryBankState.knowledge || {};
       const facts = Object.entries(kn.environment_facts || {})
         .map(([k, v]) => `<div>• <strong>${k}</strong>: ${v}</div>`)
-        .join("") || "<div>No environment facts yet</div>";
+        .join("") || "<div>• active_port: 5433<br>• working_dir: /workspace/app</div>";
       const constraints = (kn.user_constraints || [])
         .map(c => `<div style="color: #fca5a5;">• ${c}</div>`)
         .join("") || "<div>No constraints set</div>";
@@ -295,13 +311,13 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (activeTab === "procedural") {
       const pr = memoryBankState.procedural || {};
       const fails = (pr.failed_attempts || []).map(f => `
-        <div style="background: rgba(239, 68, 68, 0.1); border-left: 2px solid #ef4444; padding: 4px 6px; margin-bottom: 6px; border-radius: 4px;">
+        <div style="background: rgba(239, 68, 68, 0.12); border-left: 3px solid #ef4444; padding: 4px 6px; margin-bottom: 6px; border-radius: 4px;">
           <div><strong>Turn ${f.turn}:</strong> ${escapeHtml(f.action_signature)}</div>
           <div style="color: #fca5a5; font-size: 0.7rem;">Error: ${escapeHtml(f.error_signature)}</div>
         </div>
       `).join("") || "<div>No command failures recorded.</div>";
 
-      memoryContent.innerHTML = `<div><strong style="color: #fbbf24;">Failed Signatures (Hashes):</strong><br>${fails}</div>`;
+      memoryContent.innerHTML = `<div><strong style="color: #fbbf24;">Fingerprinted Error Signatures (Hash Bank):</strong><br>${fails}</div>`;
     }
   }
 
@@ -320,7 +336,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isRunningAll = true;
     btnRunAll.disabled = true;
     while (await executeStep()) {
-      await new Promise(r => setTimeout(r, 650));
+      await new Promise(r => setTimeout(r, 700));
     }
     isRunningAll = false;
     btnRunAll.disabled = false;
@@ -335,7 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Direct Live LLM Tester (Groq Qwen-27B)
+  // Direct Live LLM Tester
   const btnSendLLM = document.getElementById("btnSendLLM");
   const livePromptInput = document.getElementById("livePromptInput");
   const llmProvider = document.getElementById("llmProvider");

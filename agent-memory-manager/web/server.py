@@ -106,45 +106,39 @@ async def reset_session(req: ResetSessionRequest):
 
 @app.get("/api/scenarios")
 async def get_scenarios():
-    """Returns available arena scenarios."""
+    """Returns available arena scenarios with separate vanilla and companion trajectories."""
     s1 = get_postgres_port_trap_scenario()
     s2 = get_forbidden_legacy_dir_scenario()
+    
+    def serialize_step(st):
+        return {
+            "turn": st.turn,
+            "intent": st.intent,
+            "command": st.command,
+            "observation": st.expected_observation,
+            "is_failing": st.is_failing_command,
+            "violates_constraint": st.violates_constraint,
+            "is_loop_retry": getattr(st, "is_loop_retry", False)
+        }
+
     return [
         {
-            "id": "postgres_port_trap",
+            "id": s1.id,
             "name": s1.name,
             "description": s1.description,
             "prompt": s1.initial_user_prompt,
             "constraints": s1.constraints,
-            "steps": [
-                {
-                    "turn": st.turn,
-                    "intent": st.intent,
-                    "command": st.command,
-                    "observation": st.expected_observation,
-                    "is_failing": st.is_failing_command,
-                    "violates_constraint": st.violates_constraint
-                }
-                for st in s1.steps
-            ]
+            "vanilla_steps": [serialize_step(st) for st in s1.vanilla_steps],
+            "companion_steps": [serialize_step(st) for st in s1.companion_steps]
         },
         {
-            "id": "forbidden_legacy_dir",
+            "id": s2.id,
             "name": s2.name,
             "description": s2.description,
             "prompt": s2.initial_user_prompt,
             "constraints": s2.constraints,
-            "steps": [
-                {
-                    "turn": st.turn,
-                    "intent": st.intent,
-                    "command": st.command,
-                    "observation": st.expected_observation,
-                    "is_failing": st.is_failing_command,
-                    "violates_constraint": st.violates_constraint
-                }
-                for st in s2.steps
-            ]
+            "vanilla_steps": [serialize_step(st) for st in s2.vanilla_steps],
+            "companion_steps": [serialize_step(st) for st in s2.companion_steps]
         }
     ]
 
