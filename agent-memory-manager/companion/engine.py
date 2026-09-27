@@ -42,6 +42,9 @@ class ProactiveMemoryCompanion:
         loaded = self.store.load_memory_bank(session_id)
         if loaded:
             self.memory_bank = loaded
+            # Restore tracker failure signatures from stored procedural memory
+            for attempt in self.memory_bank.procedural.failed_attempts:
+                self.tracker._failure_signatures[attempt.action_signature] = attempt
         else:
             self.memory_bank = MemoryBank(session_id=session_id)
 

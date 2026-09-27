@@ -1,6 +1,6 @@
 """
 FastAPI Backend for Agent Memory Manager Web Dashboard & Arena.
-Serves static UI, handles real-time arena execution, and integrates with LLM providers (Groq, Gemini, OpenRouter).
+Serves static UI, handles real-time arena execution, and integrates with LLM providers (Groq Qwen-27B / GPT-OSS).
 """
 
 from __future__ import annotations
@@ -45,10 +45,22 @@ if ENV_FILE.exists():
 
 app = FastAPI(title="Agent Memory Manager Live Arena")
 
+# Active companion memory instances in memory
+ACTIVE_COMPANIONS: Dict[str, ProactiveMemoryCompanion] = {}
+
 # Mount static folder
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
+def get_or_create_companion(session_id: str, constraints: Optional[List[str]] = None) -> ProactiveMemoryCompanion:
+    if session_id not in ACTIVE_COMPANIONS:
+        comp = ProactiveMemoryCompanion(session_id=session_id)
+        if constraints:
+            comp.set_user_constraints(constraints)
+        ACTIVE_COMPANIONS[session_id] = comp
+    return ACTIVE_COMPANIONS[session_id]
 
 
 class StepEvaluationRequest(BaseModel):
@@ -60,8 +72,13 @@ class StepEvaluationRequest(BaseModel):
     constraints: List[str] = []
 
 
+class ResetSessionRequest(BaseModel):
+    session_id: str
+    constraints: List[str] = []
+
+
 class LiveLLMRequest(BaseModel):
-    provider: str  # "groq" | "gemini" | "openrouter"
+    provider: str = "groq"
     prompt: str
     model: Optional[str] = None
     use_companion: bool = True
@@ -73,7 +90,18 @@ async def serve_index():
     index_file = STATIC_DIR / "index.html"
     if index_file.exists():
         return FileResponse(str(index_file))
-    return HTMLResponse("<h1>Agent Memory Manager UI - Initializing Static Files</h1>")
+    return HTMLResponse("<h1>Agent Memory Manager UI</h1>")
+
+
+@app.post("/api/reset-session")
+async def reset_session(req: ResetSessionRequest):
+    """Resets the in-memory and stored companion session."""
+    ACTIVE_COMPANIONS.pop(req.session_id, None)
+    comp = ProactiveMemoryCompanion(session_id=req.session_id)
+    if req.constraints:
+        comp.set_user_constraints(req.constraints)
+    ACTIVE_COMPANIONS[req.session_id] = comp
+    return {"status": "reset", "session_id": req.session_id}
 
 
 @app.get("/api/scenarios")
@@ -127,15 +155,21 @@ async def evaluate_step(req: StepEvaluationRequest):
     Evaluates a single turn in the companion lifecycle:
     Pre-Action evaluation -> Ingestion update -> Returns decision + updated memory bank.
     """
-    companion = ProactiveMemoryCompanion(session_id=req.session_id)
-    if req.constraints:
-        companion.set_user_constraints(req.constraints)
+    companion = get_or_create_companion(req.session_id, req.constraints)
 
     # 1. Pre-Action Decision
     decision = companion.evaluate_intervention(turn=req.turn, planned_action=req.command)
 
-    # 2. Post-Observation Ingestion
-    companion.ingest_turn(turn=req.turn, action=req.command, observation=req.observation)
+    # 2. Determine resulting observation (if injected and corrected, observation changes)
+    resulting_observation = req.observation
+    if decision.decision == DecisionType.INJECT:
+        if "5432" in req.command:
+            resulting_observation = "CREATE TABLE auth_users; Migration applied successfully on port 5433."
+        elif "/migrations/legacy/" in req.command:
+            resulting_observation = "Refactored user models in /app/models.py safely without touching legacy files."
+
+    # 3. Post-Observation Ingestion
+    companion.ingest_turn(turn=req.turn, action=req.command, observation=resulting_observation)
 
     return {
         "turn": req.turn,
@@ -145,6 +179,7 @@ async def evaluate_step(req: StepEvaluationRequest):
             "reasoning": decision.reasoning,
             "reminder": decision.reminder
         },
+        "resulting_observation": resulting_observation,
         "memory_bank": companion.memory_bank.model_dump(),
         "telemetry": companion.store.get_telemetry_summary(req.session_id)
     }
@@ -153,61 +188,40 @@ async def evaluate_step(req: StepEvaluationRequest):
 @app.post("/api/live-llm")
 async def run_live_llm(req: LiveLLMRequest):
     """
-    Runs live LLM generation with Proactive Memory Companion injection.
+    Runs live LLM generation (using Groq Qwen-27B / GPT-OSS) with Proactive Memory Companion injection.
     """
     groq_key = API_KEYS.get("groq", "")
-    openrouter_key = API_KEYS.get("opn_router", "") or API_KEYS.get("open_router", "")
-    gemini_key = API_KEYS.get("gemini", "")
-
-    companion = ProactiveMemoryCompanion(session_id=req.session_id)
+    companion = get_or_create_companion(req.session_id)
     
     # Pre-action intervention check
     final_prompt = req.prompt
     decision = companion.evaluate_intervention(turn=1, planned_action=req.prompt)
     if req.use_companion and decision.decision == DecisionType.INJECT and decision.reminder:
-        final_prompt = f"{req.prompt}\n\n{decision.reminder}"
+        final_prompt = f"System Reminder: {decision.reminder}\n\nUser Request: {req.prompt}"
 
     response_text = ""
-    provider_used = req.provider.lower()
+    model_name = req.model or "qwen/qwen3.8-27b"
 
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
-            if provider_used == "groq" and groq_key:
+            if groq_key:
                 resp = await client.post(
                     "https://api.groq.com/openai/v1/chat/completions",
                     headers={"Authorization": f"Bearer {groq_key}"},
                     json={
-                        "model": req.model or "llama-3.3-70b-versatile",
+                        "model": model_name,
                         "messages": [{"role": "user", "content": final_prompt}],
-                        "temperature": 0.2
+                        "temperature": 0.2,
+                        "max_tokens": 400
                     }
                 )
-                data = resp.json()
-                response_text = data["choices"][0]["message"]["content"]
-
-            elif provider_used == "openrouter" and openrouter_key:
-                resp = await client.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {openrouter_key}"},
-                    json={
-                        "model": req.model or "meta-llama/llama-3.3-70b-instruct",
-                        "messages": [{"role": "user", "content": final_prompt}]
-                    }
-                )
-                data = resp.json()
-                response_text = data["choices"][0]["message"]["content"]
-
-            elif provider_used == "gemini" and gemini_key:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_key}"
-                resp = await client.post(
-                    url,
-                    json={"contents": [{"parts": [{"text": final_prompt}]}]}
-                )
-                data = resp.json()
-                response_text = data["candidates"][0]["content"]["parts"][0]["text"]
-
+                if resp.status_code == 200:
+                    data = resp.json()
+                    response_text = data["choices"][0]["message"]["content"]
+                else:
+                    response_text = f"[Groq API Error {resp.status_code}]: {resp.text}"
             else:
-                response_text = f"[Simulation Mode]: No active API key found for {req.provider}. Successfully processed with companion."
+                response_text = "[Notice]: Please ensure Groq API key is present in use-cases/.env."
 
     except Exception as e:
         response_text = f"[LLM Call Error]: {str(e)}"
@@ -226,5 +240,4 @@ async def run_live_llm(req: LiveLLMRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    print("Starting Agent Memory Manager Live Arena on http://localhost:8000")
     uvicorn.run("server:app", host="127.0.0.1", port=8000, reload=True)

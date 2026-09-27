@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let isRunningAll = false;
   let activeTab = "status";
   let memoryBankState = null;
+  let currentSessionId = `session_${Date.now()}`;
 
   // DOM Elements
   const scenarioSelect = document.getElementById("scenarioSelect");
@@ -57,12 +58,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function selectScenario(id) {
+  async function selectScenario(id) {
     currentScenario = scenarios.find((s) => s.id === id) || scenarios[0];
-    resetArena();
+    await resetArena();
   }
 
-  function resetArena() {
+  async function resetArena() {
     currentStepIndex = 0;
     isRunningAll = false;
     loopsIntercepted = 0;
@@ -70,6 +71,23 @@ document.addEventListener("DOMContentLoaded", () => {
     silenceCount = 0;
     pastErrors.clear();
     memoryBankState = null;
+    currentSessionId = `arena_${currentScenario ? currentScenario.id : "default"}_${Date.now()}`;
+
+    // Reset backend companion state
+    if (currentScenario) {
+      try {
+        await fetch("/api/reset-session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: currentSessionId,
+            constraints: currentScenario.constraints || []
+          })
+        });
+      } catch (e) {
+        console.warn("Reset session failed:", e);
+      }
+    }
 
     vanillaLogs.innerHTML = "";
     companionLogs.innerHTML = "";
@@ -78,12 +96,14 @@ document.addEventListener("DOMContentLoaded", () => {
     companionStatus.textContent = "Status: Ready";
     companionStatus.style.color = "#9ca3af";
 
-    scenarioPrompt.textContent = currentScenario.prompt;
-    scenarioConstraints.innerHTML = currentScenario.constraints
-      .map(c => `<span class="memory-tag" style="background: rgba(239, 68, 68, 0.15); color: #fca5a5;">Constraint: ${c}</span>`)
-      .join(" ");
+    if (currentScenario) {
+      scenarioPrompt.textContent = currentScenario.prompt;
+      scenarioConstraints.innerHTML = currentScenario.constraints
+        .map(c => `<span class="memory-tag" style="background: rgba(239, 68, 68, 0.15); color: #fca5a5;">Constraint: ${c}</span>`)
+        .join(" ");
+      turnIndicator.textContent = `Turn: 0 / ${currentScenario.steps.length}`;
+    }
 
-    turnIndicator.textContent = `Turn: 0 / ${currentScenario.steps.length}`;
     updateTelemetry();
     renderMemoryBank();
   }
@@ -107,8 +127,17 @@ document.addEventListener("DOMContentLoaded", () => {
     updateTelemetry();
 
     if (currentStepIndex >= currentScenario.steps.length) {
-      vanillaStatus.textContent = currentScenario.id === "forbidden_legacy_dir" ? "FAILED (Constraint Violated)" : "Finished";
-      vanillaStatus.style.color = currentScenario.id === "forbidden_legacy_dir" ? "#ef4444" : "#10b981";
+      if (currentScenario.id === "forbidden_legacy_dir") {
+        vanillaStatus.textContent = "FAILED (Constraint Violated)";
+        vanillaStatus.style.color = "#ef4444";
+      } else if (pastErrors.size > 1) {
+        vanillaStatus.textContent = "FAILED (Repetitive Loop)";
+        vanillaStatus.style.color = "#ef4444";
+      } else {
+        vanillaStatus.textContent = "Completed (Suboptimal)";
+        vanillaStatus.style.color = "#f59e0b";
+      }
+
       companionStatus.textContent = "SUCCESS (100%)";
       companionStatus.style.color = "#10b981";
       return false;
@@ -126,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (step.is_failing) {
       obsClass += " error";
       if (pastErrors.has(step.command)) {
-        extraWarning = `<div style="color: #ef4444; font-weight: 700; margin-top: 4px;">⚠️ [LOOP DETECTED] Repeated failing command!</div>`;
+        extraWarning = `<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 6px; border-radius: 6px; margin-top: 6px; font-weight: 700;">⚠️ [FAILURE LOOP DETECTED] Vanilla agent forgot Turn 2 error and repeated broken command!</div>`;
         vanillaStatus.textContent = "Status: Stuck in Loop";
         vanillaStatus.style.color = "#ef4444";
       } else {
@@ -134,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } else if (step.violates_constraint) {
       obsClass += " error";
-      extraWarning = `<div style="color: #ef4444; font-weight: 700; margin-top: 4px;">⛔ [CONSTRAINT VIOLATED] Modified forbidden files!</div>`;
+      extraWarning = `<div style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 6px; border-radius: 6px; margin-top: 6px; font-weight: 700;">⛔ [SAFETY BREACH] Vanilla agent violated user constraint: modified forbidden legacy file!</div>`;
       vanillaStatus.textContent = "Status: Violation Error";
       vanillaStatus.style.color = "#ef4444";
     } else {
@@ -156,13 +185,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function renderCompanionStep(step) {
-    // Call backend evaluator
     try {
       const res = await fetch("/api/evaluate-step", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          session_id: `ui_${currentScenario.id}`,
+          session_id: currentSessionId,
           scenario_id: currentScenario.id,
           turn: step.turn,
           command: step.command,
@@ -179,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       let injectionHtml = "";
       let displayedCmd = step.command;
-      let displayedObs = step.observation;
+      let displayedObs = data.resulting_observation || step.observation;
       let obsClass = "obs-line";
 
       if (data.decision.action === "INJECT") {
@@ -187,18 +215,21 @@ document.addEventListener("DOMContentLoaded", () => {
         loopsIntercepted++;
         injectionHtml = `
           <div class="injection-banner">
-            🎯 <strong>TARGETED INJECTION:</strong> ${escapeHtml(data.decision.reminder)}
+            🎯 <strong>PROACTIVE TARGETED INJECTION:</strong><br>${escapeHtml(data.decision.reminder)}
           </div>
         `;
         // Safe correction applied
         if (displayedCmd.includes("5432")) {
           displayedCmd = displayedCmd.replace("5432", "5433");
-          displayedObs = "Applied migration successfully on port 5433.";
+          displayedObs = "CREATE TABLE auth_users; Migration applied successfully on port 5433.";
+        } else if (displayedCmd.includes("/migrations/legacy/")) {
+          displayedCmd = "cat app/models.py # Intercepted: Avoided legacy files";
+          displayedObs = "Refactored user models safely without touching /migrations/legacy/.";
         }
         obsClass += " success";
       } else {
         silenceCount++;
-        injectionHtml = `<div class="silent-badge">🤫 Companion Status: SILENT (Attention preserved)</div>`;
+        injectionHtml = `<div class="silent-badge">🤫 Companion Status: SILENT (Preserved attention hygiene)</div>`;
         if (step.is_failing) {
           obsClass += " error";
         } else {
@@ -244,8 +275,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (activeTab === "status") {
       const st = memoryBankState.status || {};
       memoryContent.innerHTML = `
-        <div style="margin-bottom: 6px;"><strong style="color: #60a5fa;">Subgoal:</strong> ${st.current_subgoal || "None specified"}</div>
-        <div style="margin-bottom: 6px;"><strong style="color: #34d399;">Milestones:</strong> ${st.completed_milestones && st.completed_milestones.length ? st.completed_milestones.join(", ") : "In progress"}</div>
+        <div style="margin-bottom: 6px;"><strong style="color: #60a5fa;">Active Subgoal:</strong> ${st.current_subgoal || "Executing task workflow"}</div>
+        <div style="margin-bottom: 6px;"><strong style="color: #34d399;">Milestones:</strong> ${st.completed_milestones && st.completed_milestones.length ? st.completed_milestones.slice(-3).join(", ") : "In progress"}</div>
         <div><strong style="color: #f87171;">Blockers:</strong> ${st.pending_blockers && st.pending_blockers.length ? st.pending_blockers.join(", ") : "None"}</div>
       `;
     } else if (activeTab === "knowledge") {
@@ -265,8 +296,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const pr = memoryBankState.procedural || {};
       const fails = (pr.failed_attempts || []).map(f => `
         <div style="background: rgba(239, 68, 68, 0.1); border-left: 2px solid #ef4444; padding: 4px 6px; margin-bottom: 6px; border-radius: 4px;">
-          <div><strong>Turn ${f.turn}:</strong> ${f.action_signature}</div>
-          <div style="color: #fca5a5; font-size: 0.7rem;">Error: ${f.error_signature}</div>
+          <div><strong>Turn ${f.turn}:</strong> ${escapeHtml(f.action_signature)}</div>
+          <div style="color: #fca5a5; font-size: 0.7rem;">Error: ${escapeHtml(f.error_signature)}</div>
         </div>
       `).join("") || "<div>No command failures recorded.</div>";
 
@@ -289,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isRunningAll = true;
     btnRunAll.disabled = true;
     while (await executeStep()) {
-      await new Promise(r => setTimeout(r, 600));
+      await new Promise(r => setTimeout(r, 650));
     }
     isRunningAll = false;
     btnRunAll.disabled = false;
@@ -304,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Direct Live LLM Tester
+  // Direct Live LLM Tester (Groq Qwen-27B)
   const btnSendLLM = document.getElementById("btnSendLLM");
   const livePromptInput = document.getElementById("livePromptInput");
   const llmProvider = document.getElementById("llmProvider");
@@ -315,7 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!prompt) return;
 
     btnSendLLM.disabled = true;
-    llmOutput.textContent = "Calling model with Memory Companion...";
+    llmOutput.textContent = "Calling Groq Qwen-27B with Memory Companion...";
 
     try {
       const res = await fetch("/api/live-llm", {
@@ -324,11 +355,18 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify({
           provider: llmProvider.value,
           prompt: prompt,
-          use_companion: true
+          model: "qwen/qwen3.8-27b",
+          use_companion: true,
+          session_id: currentSessionId
         })
       });
       const data = await res.json();
-      llmOutput.innerHTML = `<strong>Intervention:</strong> ${data.intervention}<br><strong>Response:</strong> ${escapeHtml(data.llm_response)}`;
+      llmOutput.innerHTML = `
+        <div style="margin-bottom: 4px;"><span class="badge" style="color: ${data.intervention === 'INJECT' ? '#fbbf24' : '#34d399'};">${data.intervention}</span></div>
+        ${data.reminder ? `<div style="color: #fde68a; margin-bottom: 4px;">${escapeHtml(data.reminder)}</div>` : ''}
+        <div style="color: #e2e8f0;">${escapeHtml(data.llm_response)}</div>
+      `;
+      renderMemoryBank();
     } catch (e) {
       llmOutput.textContent = "Error: " + e.message;
     } finally {
