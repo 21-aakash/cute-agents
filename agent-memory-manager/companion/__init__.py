@@ -16,6 +16,8 @@ from .tracker import FailureTracker
 from .store import SQLiteMemoryStore
 from .engine import ProactiveMemoryCompanion
 from .middleware import MemoryCompanionMiddleware
+from .google_genai_adapter import GoogleGenAIMemoryAgent
+from .langchain_adapter import LangChainMemoryCompanionCallback
 
 __all__ = [
     "MemoryBank",
@@ -29,4 +31,6 @@ __all__ = [
     "SQLiteMemoryStore",
     "ProactiveMemoryCompanion",
     "MemoryCompanionMiddleware",
+    "GoogleGenAIMemoryAgent",
+    "LangChainMemoryCompanionCallback",
 ]
