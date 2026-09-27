@@ -1,4 +1,4 @@
-## 🎯 **Production-Ready Refundbot: Complete Implementation Roadmap**
+## **Production-Ready Refundbot: Complete Implementation Roadmap**
 
 Based on your requirements, here's the **prioritized TODO list** to transform this into a production-grade agentic system:
 
@@ -11,7 +11,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 1.1 Checkpoint System Architecture
 ```
-✅ Create app/checkpoints/checkpoint_manager.py
+ Create app/checkpoints/checkpoint_manager.py
 - Store agent state: current_step, completed_steps, pending_actions, context
 - SQLite table: agent_checkpoints (checkpoint_id, conversation_id, state, created_at, resumed_at)
 - Methods: save_checkpoint(), load_checkpoint(), resume_from_checkpoint()
@@ -19,7 +19,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 1.2 Waiting States & Resume Logic
 ```
-✅ Modify app/agent.py to support pause/resume
+ Modify app/agent.py to support pause/resume
 - Add agent states: RUNNING, WAITING_REFUND_STATUS, WAITING_RETURN_SHIPMENT, WAITING_ADMIN_APPROVAL, WAITING_PHOTO_UPLOAD
 - When agent needs to wait:
   1. Save checkpoint with current state
@@ -29,7 +29,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 1.3 Human-in-the-Loop Approval System
 ```
-✅ Create app/approvals/approval_manager.py
+ Create app/approvals/approval_manager.py
 - SQLite table: approval_requests (id, checkpoint_id, request_type, details, status, admin_response, created_at)
 - Admin dashboard: static/admin.html
 - Endpoints:
@@ -40,7 +40,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 1.4 External Status Polling (Refund/Return Tracking)
 ```
-✅ Create app/trackers/status_tracker.py
+ Create app/trackers/status_tracker.py
 - Background task (asyncio loop) checks:
   - Refund processing status (external payment gateway)
   - Return shipment tracking (shipping carrier API)
@@ -56,7 +56,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 2.1 Photo Upload & Storage
 ```
-✅ Add endpoint: POST /upload-return-photo
+ Add endpoint: POST /upload-return-photo
 - Accept multipart/form-data with image
 - Store in: ./uploads/return_photos/{order_id}_{timestamp}.jpg
 - Save metadata: return_photos table (photo_id, order_id, filepath, uploaded_at, analysis_status)
@@ -64,7 +64,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 2.2 Vision API Integration (OpenAI GPT-4 Vision / Claude Vision)
 ```
-✅ Create app/vision/damage_assessor.py
+ Create app/vision/damage_assessor.py
 - analyze_return_condition(image_path) -> {
     "eligible": bool,
     "condition": "pristine|minor_wear|damaged|severely_damaged",
@@ -76,7 +76,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 2.3 Agent Tool Integration
 ```
-✅ Add tool: request_return_photo(order_id, item_id)
+ Add tool: request_return_photo(order_id, item_id)
 - Saves checkpoint with state: WAITING_PHOTO_UPLOAD
 - Returns: "Please upload a photo of the item. Upload at: [URL]"
 - POST /upload-return-photo triggers resume
@@ -84,7 +84,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 2.4 Conditional Refund Logic
 ```
-✅ Modify process_refund() tool:
+ Modify process_refund() tool:
 - If item requires photo verification → request_return_photo()
 - On photo upload → analyze_return_condition()
 - If condition == "damaged" → escalate or partial refund
@@ -99,7 +99,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 3.1 Test Case Library
 ```
-✅ Create tests/eval/test_cases.json
+ Create tests/eval/test_cases.json
 [
   {
     "id": "TC001",
@@ -119,7 +119,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 3.2 LLM-as-Judge Implementation
 ```
-✅ Create tests/eval/llm_judge.py
+ Create tests/eval/llm_judge.py
 - evaluate_response(query, agent_response, expected_outcome) -> {
     "score": 0-10,
     "reasoning": str,
@@ -131,7 +131,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 3.3 Automated Eval Runner
 ```
-✅ Create tests/eval/run_eval.py
+ Create tests/eval/run_eval.py
 - Run all test cases through agent
 - Collect: tool_used, response, tokens, latency
 - Judge each response
@@ -141,7 +141,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 3.4 Regression Testing
 ```
-✅ Add pytest tests: tests/test_agent_regression.py
+ Add pytest tests: tests/test_agent_regression.py
 - Test critical flows: refund approval, out-of-scope, guardrails
 - Mock LLM responses for deterministic tests
 - CI/CD integration (GitHub Actions)
@@ -155,7 +155,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 4.1 Intent Classifier
 ```
-✅ Create app/routing/intent_classifier.py
+ Create app/routing/intent_classifier.py
 - classify_intent(user_query) -> {
     "intent": "refund|order_status|return_policy|shipping|general",
     "confidence": 0.0-1.0,
@@ -166,7 +166,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 4.2 Specialist Agents
 ```
-✅ Create app/agents/specialist_agents.py
+ Create app/agents/specialist_agents.py
 - RefundSpecialistAgent: Handles refunds, returns, policy questions
 - OrderStatusAgent: Handles tracking, delivery questions
 - GeneralSupportAgent: Handles product info, account questions
@@ -175,7 +175,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 4.3 Router Agent
 ```
-✅ Modify app/agent.py to RouterAgent pattern
+ Modify app/agent.py to RouterAgent pattern
 - classify_intent() on first message
 - Route to specialist agent
 - Track routing decisions in analytics
@@ -184,7 +184,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 4.4 Agent Handoff
 ```
-✅ Implement agent handoff protocol
+ Implement agent handoff protocol
 - Specialist can escalate to human: save checkpoint → admin approval flow
 - Context transfer: pass conversation history + entities to next agent
 - Track handoffs in analytics
@@ -198,14 +198,14 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 5.1 Policy Versioning
 ```
-✅ Modify app/models/return_policy.py
+ Modify app/models/return_policy.py
 - Add fields: version, effective_from, effective_until, is_active
 - Store policy history: All versions kept for audit
 ```
 
 #### 5.2 Policy Update Pipeline
 ```
-✅ Create app/policies/policy_updater.py
+ Create app/policies/policy_updater.py
 - Endpoint: POST /admin/update-policy
 - Upload CSV or JSON with new policies
 - Validation: Check conflicts, effective dates
@@ -214,7 +214,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 5.3 Policy Change Notifications
 ```
-✅ Add policy change tracking
+ Add policy change tracking
 - When policy changes → log in policy_audit_log table
 - Notify affected users if they have pending cases
 - Agent checks policy version at refund time (not cached version)
@@ -222,7 +222,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 5.4 External Policy Sync (Optional)
 ```
-⚠️ If policies come from external system:
+ If policies come from external system:
 - Scheduled job: Poll external API every 6 hours
 - Compare with current policies
 - Auto-update if changed
@@ -237,8 +237,8 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 6.1 Docker Containerization
 ```
-✅ Create Dockerfile (multi-stage)
-✅ Create docker-compose.yml
+ Create Dockerfile (multi-stage)
+ Create docker-compose.yml
 - Services: api, postgres (replace SQLite), redis
 - Volumes: ./uploads, ./logs
 - Health checks: /health endpoint
@@ -246,7 +246,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 6.2 Database Migration (SQLite → PostgreSQL)
 ```
-✅ Update app/database.py
+ Update app/database.py
 - Change DATABASE_URL to Postgres
 - Alembic migrations: alembic init, create initial migration
 - Migration script: python migrate_sqlite_to_postgres.py
@@ -254,7 +254,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 6.3 Redis Cache Layer
 ```
-✅ Replace in-memory cache with Redis
+ Replace in-memory cache with Redis
 - Connection pooling
 - Cache invalidation on policy updates
 - TTL management
@@ -262,46 +262,46 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 6.4 Advanced Observability
 ```
-✅ Add structured logging (loguru)
-✅ OpenTelemetry tracing:
+ Add structured logging (loguru)
+ OpenTelemetry tracing:
   - Instrument FastAPI
   - Trace agent loops
   - Export to Jaeger/Grafana
-✅ Prometheus metrics:
+ Prometheus metrics:
   - /metrics endpoint
   - Track: request_duration, agent_iterations, tool_calls, cache_hits
 ```
 
 #### 6.5 Rate Limiting & Security
 ```
-✅ Add slowapi rate limiter:
+ Add slowapi rate limiter:
   - 100 requests/hour per IP
   - 20 requests/minute per user
-✅ Add PII redaction:
+ Add PII redaction:
   - Detect credit card, SSN, email in logs
   - Redact before storing
-✅ Add CORS middleware (production domains only)
-✅ Add request ID tracking
+ Add CORS middleware (production domains only)
+ Add request ID tracking
 ```
 
 #### 6.6 Error Recovery & Retry Logic
 ```
-✅ Add exponential backoff for:
+ Add exponential backoff for:
   - OpenAI API calls
   - External API calls (shipping, payment)
   - Database retries on conflict
-✅ Dead letter queue for failed tasks
-✅ Circuit breaker pattern for external services
+ Dead letter queue for failed tasks
+ Circuit breaker pattern for external services
 ```
 
 #### 6.7 CI/CD Pipeline
 ```
-✅ Create .github/workflows/ci.yml
+ Create .github/workflows/ci.yml
 - Run tests on PR
 - Run eval suite
 - Build Docker image
 - Deploy to staging on merge to main
-✅ Create .github/workflows/deploy.yml
+ Create .github/workflows/deploy.yml
 - Deploy to production on tag
 - Health check validation
 - Rollback on failure
@@ -315,18 +315,18 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 7.1 Voice Interface
 ```
-⚠️ Add Whisper API for voice input
-⚠️ Add TTS for voice responses
+ Add Whisper API for voice input
+ Add TTS for voice responses
 ```
 
 #### 7.2 Multi-language Support
 ```
-⚠️ Detect language → translate → respond in user's language
+ Detect language → translate → respond in user's language
 ```
 
 #### 7.3 Proactive Notifications
 ```
-⚠️ Email/SMS when:
+ Email/SMS when:
   - Refund approved
   - Admin approval needed
   - Return shipment received
@@ -334,7 +334,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 #### 7.4 Analytics Dashboard v2
 ```
-⚠️ Add charts:
+ Add charts:
   - Agent routing distribution
   - Checkpoint resume times
   - Photo verification success rate
@@ -342,7 +342,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 ---
 
-## **📊 Implementation Timeline**
+## ** Implementation Timeline**
 
 | Phase | Priority | Time | Dependencies |
 |-------|----------|------|--------------|
@@ -358,7 +358,7 @@ Based on your requirements, here's the **prioritized TODO list** to transform th
 
 ---
 
-## **🚀 Quick Start: Next 3 Steps**
+## ** Quick Start: Next 3 Steps**
 
 **If you want to start NOW:**
 

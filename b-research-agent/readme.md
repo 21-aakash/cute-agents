@@ -1,4 +1,4 @@
-# 🔍 Autonomous Deep Research Assistant
+# Autonomous Deep Research Assistant
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![LangGraph](https://img.shields.io/badge/LangGraph-Multi_Agent-orange?style=flat)](https://github.com/langchain-ai/langgraph)
@@ -7,11 +7,11 @@
 [![PostgreSQL](https://img.shields.io/badge/Storage-PostgreSQL-336791?logo=postgresql&logoColor=white)](docker-compose.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A production-grade, multi-agent autonomous research assistant: **Planner → Research → Writer → Critic → Persist**, built with **LangGraph**, **FastAPI**, **Qdrant vector search**, **PostgreSQL**, and a modern **React + Vite** web interface with integrated evaluation dashboards.
+A production-grade, multi-agent autonomous research assistant: **Planner -> Research -> Writer -> Critic -> Persist**, built with **LangGraph**, **FastAPI**, **Qdrant vector search**, **PostgreSQL**, and a modern **React + Vite** web interface with integrated evaluation dashboards.
 
 ---
 
-## 🏗️ Architecture & Pipeline Flow
+## Architecture & Pipeline Flow
 
 ```mermaid
 graph TD
@@ -27,7 +27,7 @@ graph TD
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
 * **Multi-Agent State Graph:** Stateful execution flow with explicit planning, multi-source retrieval, draft writing, and factual critic feedback loops.
 * **Hybrid Search & Vector Store:** Multi-tenant workspace document ingestion powered by **Qdrant** and hybrid vector/keyword retrieval.
@@ -37,7 +37,7 @@ graph TD
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 ├── api/                  # FastAPI endpoints (chat, documents, evals, memory, workspaces)
@@ -61,7 +61,7 @@ graph TD
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Start Infrastructure
 ```bash
@@ -95,7 +95,7 @@ npm run dev
 
 ---
 
-## 📊 API Workflow Overview
+## API Workflow Overview
 
 1. **Create Workspace:** `POST /api/v1/workspaces` (returns `api_key` & `workspace_id`)
 2. **Ingest Documents:** `POST /api/v1/workspaces/{id}/documents` (Upload PDF / MD / TXT)
@@ -105,7 +105,7 @@ npm run dev
 
 ---
 
-## 🧪 Testing & Evals
+## Testing & Evals
 
 Run the built-in evaluation suite:
 ```bash

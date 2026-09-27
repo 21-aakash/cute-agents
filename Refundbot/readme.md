@@ -4,7 +4,7 @@
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 - [System Architecture](#system-architecture)
 - [Lifecycle Flow](#lifecycle-flow)
 - [Repository Structure](#repository-structure)
@@ -16,7 +16,7 @@
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -75,7 +75,7 @@
 
 ---
 
-## 🔄 Lifecycle Flow
+## Lifecycle Flow
 
 ### **1. User Journey: Portal → Chat → Agent Response**
 
@@ -134,7 +134,7 @@
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 Refundbot/
@@ -227,7 +227,7 @@ Refundbot/
 │   ├── chat.html                          # Chat interface
 │   │                                      # → POST /chat with conversation_id
 │   │                                      # → Display messages with markdown rendering
-│   │                                      # → Feedback widget (👍👎)
+│   │                                      # → Feedback widget ()
 │   │
 │   └── dashboard.html                     # Analytics dashboard
 │                                          # → Fetch GET /analytics
@@ -251,7 +251,7 @@ Refundbot/
 
 ---
 
-## 💾 Session Management
+## Session Management
 
 ### **Architecture**
 
@@ -355,7 +355,7 @@ if email and order_id:
 
 ---
 
-## 🤖 Agent Execution Flow
+## Agent Execution Flow
 
 ### **Step-by-Step Process**
 
@@ -363,12 +363,12 @@ if email and order_id:
 ┌─────────────────────────────────────────────────────────────────┐
 │  STEP 0: INPUT GUARDRAILS (app/guardrails.py)                  │
 ├─────────────────────────────────────────────────────────────────┤
-│  ✓ is_prompt_injection(message)                                │
+│   is_prompt_injection(message)                                │
 │    → Checks 40+ patterns: "ignore instructions", DAN attacks   │
-│  ✓ is_out_of_scope(message)                                    │
+│   is_out_of_scope(message)                                    │
 │    → Checks 10+ keywords: "weather", "joke", "capital"         │
-│  ✗ BLOCKED → Return error response immediately                 │
-│  ✓ PASSED → Continue to Step 1                                 │
+│   BLOCKED → Return error response immediately                 │
+│   PASSED → Continue to Step 1                                 │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
@@ -404,10 +404,10 @@ if email and order_id:
 │  STEP 3: TOOL EXECUTION (app/tools.py)                        │
 ├─────────────────────────────────────────────────────────────────┤
 │  3.1 PRE-TOOL GUARDRAILS                                       │
-│      ✓ validate_tool_call(tool_name, args)                    │
+│       validate_tool_call(tool_name, args)                    │
 │        → Check: process_refund amount ≤ $500                  │
 │        → Check: All required args present                      │
-│      ✗ BLOCKED → Return error, skip tool execution            │
+│       BLOCKED → Return error, skip tool execution            │
 │                                                                 │
 │  3.2 Route to appropriate tool function                        │
 │      → TOOL_REGISTRY[tool_name](**args)                       │
@@ -419,8 +419,8 @@ if email and order_id:
 │      → Returns: {success: bool, data/error: ...}              │
 │                                                                 │
 │  3.4 POST-TOOL GUARDRAILS                                      │
-│      ✓ Check tool response for PII leakage                    │
-│      ✓ Validate response schema                                │
+│       Check tool response for PII leakage                    │
+│       Validate response schema                                │
 │                                                                 │
 │  3.5 Track analytics                                           │
 │      → analytics.record_tool_call(tool_name, success)         │
@@ -446,17 +446,17 @@ if email and order_id:
 │  STEP 5: OUTPUT GUARDRAILS (app/guardrails.py)                │
 ├─────────────────────────────────────────────────────────────────┤
 │  5.1 Scope enforcement                                         │
-│      ✓ is_out_of_scope(response)                              │
+│       is_out_of_scope(response)                              │
 │        → Check if agent went off-topic                         │
 │                                                                 │
 │  5.2 Information leakage prevention                            │
-│      ✓ contains_internal_details(response)                    │
+│       contains_internal_details(response)                    │
 │        → Check for tool names, internal IDs                    │
 │        → Remove any leaked technical details                   │
 │                                                                 │
 │  5.3 Policy compliance                                         │
-│      ✓ Verify refund amounts don't exceed policy              │
-│      ✓ Check mandatory policy references included              │
+│       Verify refund amounts don't exceed policy              │
+│       Check mandatory policy references included              │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
@@ -512,7 +512,7 @@ async def chat(request: ChatRequest):
 
 ---
 
-## 🛡️ Security & Guardrails
+## Security & Guardrails
 
 ### **Three-Layer Defense Architecture**
 
@@ -559,7 +559,7 @@ async def chat(request: ChatRequest):
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### **Prerequisites**
 - Python 3.13+
@@ -601,7 +601,7 @@ python -m app.main
 
 ---
 
-## 📡 API Reference
+## API Reference
 
 ### **POST /chat**
 **Description**: Send message to agent
@@ -683,20 +683,20 @@ python -m app.main
 
 ---
 
-## 📊 Production Metrics (P0+P1)
+## Production Metrics (P0+P1)
 
 | Metric | Current | Target | Status |
 |--------|---------|--------|--------|
-| Resolution Rate | 75% | 80% | ⚠️ |
-| Escalation Rate | 15% | <10% | ⚠️ |
-| CSAT Score | 80% | 85% | ⚠️ |
-| Cost/Conversation | $0.02 | <$0.05 | ✅ |
-| Error Rate | 5% | <3% | ⚠️ |
-| Avg Response Time | 2.5s | <3s | ✅ |
+| Resolution Rate | 75% | 80% |  |
+| Escalation Rate | 15% | <10% |  |
+| CSAT Score | 80% | 85% |  |
+| Cost/Conversation | $0.02 | <$0.05 |  |
+| Error Rate | 5% | <3% |  |
+| Avg Response Time | 2.5s | <3s |  |
 
 ---
 
-## 🔮 Future Roadmap
+## Future Roadmap
 
 See **Production Enhancement Plan** for:
 - **Phase 1**: Long-running agent checkpoints (Google Vertex AI pattern)
@@ -708,13 +708,13 @@ See **Production Enhancement Plan** for:
 
 ---
 
-## 📝 License
+## License
 
 MIT License - See LICENSE file for details
 
 ---
 
-## 👥 Contributors
+## Contributors
 
 Built as a learning project for **top 3-5% AI engineering** practice covering:
 - Async Python + FastAPI

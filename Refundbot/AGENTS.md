@@ -1,11 +1,11 @@
-# 🤖 Agent Specification: Refundbot
+# Agent Specification: Refundbot
 
-## 🎯 Role & Objective
+## Role & Objective
 Refundbot is an autonomous customer support and dispute resolution agent designed to evaluate refund requests against company policy, detect fraudulent signals, interact with order management databases, and make deterministic, compliant refund decisions.
 
 ---
 
-## 🧩 Architectural Paradigm: Tool-Augmented State Machine & Guardrails
+## Architectural Paradigm: Tool-Augmented State Machine & Guardrails
 * **Pattern**: Tool Calling + Policy Evaluation + Guardrail Interceptor
 * **Core Agent Capabilities**:
   * **Order Lookup**: Queries order repository by `order_id` or customer email.
@@ -15,7 +15,7 @@ Refundbot is an autonomous customer support and dispute resolution agent designe
 
 ---
 
-## 🛠️ Tools & Integrations
+## Tools & Integrations
 | Tool Name | Type | Description |
 |---|---|---|
 | `get_order_details` | Data Fetch | Retrieves order date, item list, total amount, and delivery status |
@@ -26,7 +26,7 @@ Refundbot is an autonomous customer support and dispute resolution agent designe
 
 ---
 
-## 🚀 Execution & Testing
+## Execution & Testing
 ```bash
 # Run tests
 pytest tests/

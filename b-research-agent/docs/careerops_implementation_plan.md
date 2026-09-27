@@ -1,10 +1,10 @@
-# 🚀 CareerOps AI — Phased Implementation & Architecture Blueprint
+# CareerOps AI — Phased Implementation & Architecture Blueprint
 
 An evolutionary, hands-on roadmap to pivot our base research agent into **CareerOps AI**, starting with a solid, working **V1 (Conversational Agent + Career Vault RAG + React UI + Multi-Model LLMs)** and methodically layering all advanced enterprise capabilities (**Specialized Nodes, Self-Learning Memory, Semantic Caching, RBAC, Guardrails, Observability & Cloud Deployment**).
 
 ---
 
-## 🏛️ Architectural Framework Decision: LangGraph + Google Gemini / Model-Agnostic
+## Architectural Framework Decision: LangGraph + Google Gemini / Model-Agnostic
 
 ### Why this combination gives the highest engineering and resume value:
 1. **Orchestration Layer: LangGraph**
@@ -15,7 +15,7 @@ An evolutionary, hands-on roadmap to pivot our base research agent into **Career
 
 ---
 
-## 🗺️ Master Phase-Wise Roadmap
+## Master Phase-Wise Roadmap
 
 ```mermaid
 graph TD
@@ -56,9 +56,9 @@ graph TD
 
 ---
 
-## 📦 Phase Details & Actionable Steps
+## Phase Details & Actionable Steps
 
-### 🟢 Phase 1: V1 Working Core (Fast Interactive Foundation)
+### Phase 1: V1 Working Core (Fast Interactive Foundation)
 *Goal: Get a fully working, interactive conversational career assistant running locally with document ingestion, vector retrieval, and live UI.*
 - **Step 1.1: Project Branding & Minimal Pivot**:
   - Update `pyproject.toml`, `services/config.py`, and domain metadata to `CareerOps AI`.
@@ -73,7 +73,7 @@ graph TD
 
 ---
 
-### 🔵 Phase 2: Specialized Career Agent Workflows
+### Phase 2: Specialized Career Agent Workflows
 *Goal: Add agentic intelligence specifically tailored for job seekers and career switchers.*
 - **Step 2.1: JD Decomposition & Match Fit Scorer (0–100)**:
   - Input: Pasted Job Description or PDF.
@@ -87,7 +87,7 @@ graph TD
 
 ---
 
-### 🟣 Phase 3: Self-Learning Memory & Semantic Caching
+### Phase 3: Self-Learning Memory & Semantic Caching
 *Goal: Optimize latency, cut LLM API costs by 60%, and enable continuous self-learning.*
 - **Step 3.1: Self-Learning Episodic Memory (Qdrant)**:
   - Stores user feedback (*"Prefer bullet length under 2 lines"*, *"Emphasize distributed systems over frontend"*).
@@ -97,7 +97,7 @@ graph TD
 
 ---
 
-### 🟡 Phase 4: Security, RBAC & Multi-Layer Guardrails
+### Phase 4: Security, RBAC & Multi-Layer Guardrails
 *Goal: Enterprise compliance, candidate privacy, and prompt safety.*
 - **Step 4.1: RBAC & Multi-Tenant Isolation**:
   - JWT auth in `api/deps.py` with roles: `JobSeeker` (isolated vault), `CareerCoach` (batch review), `Admin`.
@@ -107,7 +107,7 @@ graph TD
 
 ---
 
-### 🟠 Phase 5: Observability, Alerting & RAGAS Evals
+### Phase 5: Observability, Alerting & RAGAS Evals
 *Goal: Production LLMOps visibility and automated quality benchmarking.*
 - **Step 5.1: Distributed Tracing (Langfuse & LangSmith)**:
   - Capture token costs, latencies, tool calls, and prompt versions in `services/tracing.py`.
@@ -118,7 +118,7 @@ graph TD
 
 ---
 
-### 🔴 Phase 6: Cloud Deployment & Resume Showcase
+### Phase 6: Cloud Deployment & Resume Showcase
 *Goal: Deploy live to the web and document for portfolio/resume.*
 - **Step 6.1: Containerization**:
   - Multi-stage `Dockerfile` and `docker-compose.prod.yml`.

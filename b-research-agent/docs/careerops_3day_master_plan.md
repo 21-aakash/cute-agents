@@ -1,10 +1,10 @@
-# 🚀 CareerOps AI — 3-Day Master Development & Learning Blueprint
+# CareerOps AI — 3-Day Master Development & Learning Blueprint
 
 A structured 3-day roadmap synthesizing the **Jam with AI "Observable Job Agent"** principles with our **Enterprise Production Layer** (**LangGraph, Multi-Collection Qdrant RAG, Self-Learning Memory, RBAC, Guardrails, Semantic Caching, Observability & Cloud Deployment**).
 
 ---
 
-## 📊 1. Master Feature Matrix: JamWithAI vs. CareerOps AI
+## 1. Master Feature Matrix: JamWithAI vs. CareerOps AI
 
 | Category | JamWithAI Reference (Base) | CareerOps AI (Our Enterprise Build) | Why It Matters |
 |---|---|---|---|
@@ -24,7 +24,7 @@ A structured 3-day roadmap synthesizing the **Jam with AI "Observable Job Agent"
 
 ---
 
-## 🗓️ 2. Phased 3-Day Development & Learning Plan
+## 2. Phased 3-Day Development & Learning Plan
 
 ```mermaid
 graph TD
@@ -57,7 +57,7 @@ graph TD
 
 ---
 
-### 🟢 DAY 1: Part 1 — Scout, Profile & Fit Scoring
+### DAY 1: Part 1 — Scout, Profile & Fit Scoring
 *Goal: Ingest candidate career vaults, extract structured profiles, execute hybrid job retrieval, and compute a 0–100 fit score with full observability.*
 
 - **Concepts to Learn:**
@@ -76,7 +76,7 @@ graph TD
 
 ---
 
-### 🔵 DAY 2: Part 2 — Grounded Tailoring, Gmail Drafts & Fabrication Critic Gate
+### DAY 2: Part 2 — Grounded Tailoring, Gmail Drafts & Fabrication Critic Gate
 *Goal: Implement pointer-grounded resume rewrites, personalized cold outreach, and an in-graph Critic quality gate that eliminates hallucinations.*
 
 - **Concepts to Learn:**
@@ -94,7 +94,7 @@ graph TD
 
 ---
 
-### 🟣 DAY 3: Part 3 — Self-Learning Memory, Caching, RBAC & Cloud Deployment
+### DAY 3: Part 3 — Self-Learning Memory, Caching, RBAC & Cloud Deployment
 *Goal: Add continuous learning memory, high-speed semantic caching, multi-tenant RBAC, alerting webhooks, RAGAS evals, and deploy to the cloud.*
 
 - **Concepts to Learn:**

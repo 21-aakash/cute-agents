@@ -1,6 +1,6 @@
-# 🚀 Production Deployment Guide
+# Production Deployment Guide
 
-## 📦 Installation
+## Installation
 
 ```bash
 # Install dependencies
@@ -11,7 +11,7 @@ cp .env.example .env
 # Edit .env with your API keys
 ```
 
-## 🗄️ Database Migrations with Alembic
+## Database Migrations with Alembic
 
 ```bash
 # Install Alembic
@@ -51,7 +51,7 @@ async def run_async_migrations():
     await connectable.dispose()
 ```
 
-## 🐳 Docker Deployment
+## Docker Deployment
 
 ```dockerfile
 # Dockerfile
@@ -98,7 +98,7 @@ services:
     restart: unless-stopped
 ```
 
-## 📊 Monitoring & Logging
+## Monitoring & Logging
 
 ### Structured Logging
 
@@ -146,7 +146,7 @@ sentry_sdk.init(
 )
 ```
 
-## ⚡ Performance Tuning
+## Performance Tuning
 
 ### 1. Connection Pooling
 
@@ -217,7 +217,7 @@ async def chat(request: ChatRequest, background_tasks: BackgroundTasks):
     return response
 ```
 
-## 🔒 Security Checklist
+## Security Checklist
 
 - [x] **Environment variables** - Never commit .env files
 - [x] **SQL injection protection** - ORM handles this
@@ -239,7 +239,7 @@ app.add_middleware(
 )
 ```
 
-## 📈 Scalability
+## Scalability
 
 ### Horizontal Scaling
 
@@ -290,7 +290,7 @@ engine = create_async_engine(
 └─────────────┘
 ```
 
-## 🧪 Testing in Production
+## Testing in Production
 
 ```bash
 # Run health check
@@ -308,7 +308,7 @@ curl http://localhost:8000/metrics
 hey -n 1000 -c 10 http://localhost:8000/health
 ```
 
-## 📋 Production Checklist
+## Production Checklist
 
 - [ ] Environment variables configured
 - [ ] Database migrations applied
@@ -324,7 +324,7 @@ hey -n 1000 -c 10 http://localhost:8000/health
 - [ ] Load testing completed
 - [ ] Documentation updated
 
-## 🚨 Troubleshooting
+## Troubleshooting
 
 ### Database locked errors
 ```python

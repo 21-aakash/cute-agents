@@ -2,7 +2,7 @@
 ### Collection of AI system paradigms
 
 <p align="center">
-  <img src="./assets/banner.jpg" alt="Family of Cute AI Agents" width="100%" />
+  <img src="./assets/banner.jpg" alt="Family of AI Agents" width="100%" />
 </p>
 
 ---
@@ -11,31 +11,31 @@ A curated monorepo featuring specialized AI agent architectures, multi-agent wor
 
 ---
 
-## 🤖 Agent Kits & Paradigms
+## Agent Kits & Paradigms
 
 | Agent Kit | Architectural Paradigm | Key Technologies | Description |
 |---|---|---|---|
-| 🛡️ **[Refundbot](./Refundbot)** | **Deterministic Guardrail & Tool-Calling Agent** | Python, FastAPI, SQLite / PostgreSQL | Customer service and refund decision engine with policy evaluation, fraud scoring, and audit trails. |
-| 🔬 **[Research Assistant (`b-research-agent`)](./b-research-agent)** | **Multi-Agent Directed Graph (DAG)** | LangGraph, FastAPI, Qdrant Vector DB, React 18 | Multi-agent autonomous research assistant: **Planner → Research → Writer → Critic → Persist** with fact-checking loops and evaluation dashboard. |
-| 🧠 **[Agent Memory Manager](./agent-memory-manager)** | **External Memory Companion & Sidecar** | Python, Event-driven Memory Sidecar | Dedicated companion agent tracking environment errors and providing targeted memory reminders to improve long-horizon task completion. |
+| **[Refundbot](./Refundbot)** | **Deterministic Guardrail & Tool-Calling Agent** | Python, FastAPI, SQLite / PostgreSQL | Customer service and refund decision engine with policy evaluation, fraud scoring, and audit trails. |
+| **[Research Assistant (`b-research-agent`)](./b-research-agent)** | **Multi-Agent Directed Graph (DAG)** | LangGraph, FastAPI, Qdrant Vector DB, React 18 | Multi-agent autonomous research assistant: Planner -> Research -> Writer -> Critic -> Persist with fact-checking loops and evaluation dashboard. |
+| **[Agent Memory Manager](./agent-memory-manager)** | **External Memory Companion & Sidecar** | Python, Event-driven Memory Sidecar | Dedicated companion agent tracking environment errors and providing targeted memory reminders to improve long-horizon task completion. |
 
 ---
 
-## 📂 Monorepo Structure
+## Monorepo Structure
 
 ```
 my-cute-agents/
 ├── assets/
 │   └── banner.jpg               # Diagrammatic family of AI agents illustration
-├── 🤖 Refundbot/                # Policy & customer support agent
+├── Refundbot/                   # Policy & customer support agent
 │   ├── AGENTS.md                # Agent specification & tool contracts
 │   └── readme.md
-├── 🔬 b-research-agent/          # Multi-agent LangGraph research engine
+├── b-research-agent/            # Multi-agent LangGraph research engine
 │   ├── AGENTS.md                # Multi-agent graph specification
 │   ├── api/                     # FastAPI backend & LangGraph runner
 │   ├── ui/                      # React + Vite frontend
 │   └── readme.md
-├── 🧠 agent-memory-manager/     # Memory companion & state tracker
+├── agent-memory-manager/        # Memory companion & state tracker
 │   ├── AGENTS.md                # Memory companion specification
 │   └── readme.md
 ├── AGENTS.md                    # Monorepo agent directory & standards
@@ -44,7 +44,7 @@ my-cute-agents/
 
 ---
 
-## 🚀 Independent Deployment Guide
+## Independent Deployment Guide
 
 Each agent is decoupled and can be deployed individually from this monorepo:
 
@@ -82,5 +82,5 @@ jobs:
 
 ---
 
-## 📜 License
+## License
 MIT

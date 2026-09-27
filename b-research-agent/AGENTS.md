@@ -1,11 +1,11 @@
-# 🔬 Agent Specification: Research Assistant (`b-research-agent`)
+# Agent Specification: Research Assistant (b-research-agent)
 
-## 🎯 Role & Objective
+## Role & Objective
 An autonomous multi-agent research pipeline designed to take high-level research questions, formulate search strategies, gather and verify information from multiple web sources, synthesize comprehensive answers, and perform iterative self-criticism.
 
 ---
 
-## 🧩 Architectural Paradigm: Multi-Agent Directed Graph (LangGraph)
+## Architectural Paradigm: Multi-Agent Directed Graph (LangGraph)
 
 ```mermaid
 flowchart LR
@@ -26,7 +26,7 @@ flowchart LR
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 * **Orchestration**: LangGraph, LangChain
 * **API & Backend**: FastAPI, Pydantic v2
 * **Storage**: Qdrant Vector Store, PostgreSQL, SQLAlchemy
@@ -35,7 +35,7 @@ flowchart LR
 
 ---
 
-## 🚀 Execution
+## Execution
 ```bash
 # Start backend
 uv run uvicorn api.main:app --reload --port 8000

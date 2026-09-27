@@ -141,9 +141,9 @@ States: `pending` (dim) | `active` (pulse + primary border) | `done` (check) | `
 #### B. Tool calls (expandable list)
 Each row from `tool_calls[]`:
 ```
-🔍 doc_search     "API key rotation procedure"     6 hits    240ms
-🌐 web_search     "credential rotation best practice"  3 hits
-💾 memory_search  "key rotation"                   1 hit
+ doc_search     "API key rotation procedure"     6 hits    240ms
+ web_search     "credential rotation best practice"  3 hits
+ memory_search  "key rotation"                   1 hit
 ```
 - Expand → show raw query + hit count
 - Icon by tool type
@@ -153,16 +153,16 @@ Perplexity-style **source cards** from `evidence[]`:
 
 ```
 ┌─────────────────────────────┐
-│ 📄 Security Policy          │  score 0.84
+│  Security Policy          │  score 0.84
 │ Section: API Key Rotation   │
 │ "Revoke the old key in..."  │  [1]
 └─────────────────────────────┘
 ┌─────────────────────────────┐
-│ 🌐 owasp.org                │  score 0.71
+│  owasp.org                │  score 0.71
 │ "Credential rotation..."    │  [2]
 └─────────────────────────────┘
 ┌─────────────────────────────┐
-│ 🧠 memory                   │
+│  memory                   │
 │ Earlier finding: ...        │  [3]
 └─────────────────────────────┘
 ```

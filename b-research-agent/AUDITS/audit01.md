@@ -85,8 +85,8 @@ Three “memory” layers in your project
 
 Workspace = knowledge base boundary (uploaded docs, Qdrant memory, API key)
 Session = one chat thread inside that workspace
-Many sessions per workspace ✓
-Many workspaces per user ✓ (conceptually)
+Many sessions per workspace 
+Many workspaces per user  (conceptually)
 
 
 

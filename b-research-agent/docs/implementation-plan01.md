@@ -1,4 +1,4 @@
-# 🚀 CareerOps AI — Autonomous Job Search & Career Due-Diligence Agent
+# CareerOps AI — Autonomous Job Search & Career Due-Diligence Agent
 
 > **Inspired by the Observable Job Agent, Multi-Agent LLMOps & Job Hunt Automation**
 
@@ -6,7 +6,7 @@ A production-grade, multi-agent AI career copilot and due-diligence platform tha
 
 ---
 
-## 🎯 Executive Problem & Solution
+## Executive Problem & Solution
 
 ### The Problem:
 Job seekers and career switchers spend hundreds of hours manually browsing job boards, reading company engineering blogs, assessing skill matches, identifying technical gaps, and customizing resumes, cover letters, and outreach emails for every application.
@@ -22,7 +22,7 @@ Job seekers and career switchers spend hundreds of hours manually browsing job b
 
 ---
 
-## 🧩 Complete Architecture & Enterprise Feature Matrix
+## Complete Architecture & Enterprise Feature Matrix
 
 ```mermaid
 graph TD
@@ -84,7 +84,7 @@ graph TD
 
 ---
 
-## 🗺️ Step-by-Step Educational Implementation Roadmap
+## Step-by-Step Educational Implementation Roadmap
 
 We will build the entire system progressively so you can learn each layer hands-on:
 
@@ -132,7 +132,7 @@ We will build the entire system progressively so you can learn each layer hands-
 
 ---
 
-## 🧪 Verification Plan
+## Verification Plan
 
 1. **Automated Unit & Security Tests:**
    - RBAC test: Verify `JobSeeker` cannot access other candidates' vaults.
