@@ -7,6 +7,71 @@
 
 ---
 
+
+This is one of the most critical questions in AI agent design: **Why can’t the Action Agent or Orchestrator handle this on their own, and what guarantees that the Memory Agent acts reliably at the right time?**
+
+Here is how the research paper answers this:
+
+---
+
+### 1. Why the Action Agent CANNOT be Relied on for Memory
+* **The "Amnesia Paradox"**: When an LLM suffers from attention decay, *it does not know that it has forgotten something*.
+* Asking the Action Agent to check its own memory is like asking a human with amnesia to remember what they forgot—they won't do it because they believe they are making a logical move.
+* In long horizons (10–30+ turns), the Action Agent is overwhelmed with 500+ lines of test outputs, linter logs, and bash errors. Its attention is completely consumed by syntax and immediate reasoning.
+
+---
+
+### 2. Why a Hardcoded Orchestrator CANNOT Handle It Alone
+* You cannot write hardcoded `if/else` rules for arbitrary coding tasks because software failures are too dynamic:
+  * One error is an SQL syntax issue.
+  * Another is a missing environment variable or port conflict.
+  * Another is an API rate limit or schema mismatch.
+* A static orchestrator does not have the semantic understanding to know that `"undefined column: stripe_customer_id"` relates to `"apply migration 004"`.
+
+---
+
+### 3. How the Memory Agent Guarantees High Reliability
+
+The Memory Agent succeeds because of **3 structural design guarantees**:
+
+#### Guarantee A: Dedicated, Noise-Free Context Window
+* The Action Agent sees 500+ lines of stdout noise, file diffs, and formatting logs.
+* The Memory Agent **never sees the raw noise**. It only looks at its clean, 3-partition memory bank:
+  * $\mathcal{M}_{\text{status}}$: What milestone are we on?
+  * $\mathcal{M}_{\text{knowledge}}$: What are the strict rules and ports?
+  * $\mathcal{M}_{\text{procedural}}$: What specific commands already failed?
+* Because its context is tiny and structured (less than 200 tokens), it suffers **0% attention dilution**.
+
+#### Guarantee B: Deterministic Error Fingerprinting
+* When an action fails, the sidecar stores an **Error Signature**:
+  ```json
+  {
+    "action_signature": "pytest tests/test_payments.py",
+    "error_type": "UndefinedColumn: stripe_customer_id",
+    "required_countermeasure": "Apply migration 004 before re-running"
+  }
+  ```
+* When the Action Agent attempts an action matching this pattern, the Memory Agent does not have to "guess"—it has a grounded, concrete match in its procedural bank.
+
+#### Guarantee C: Strict Silence Bias (High Precision Threshold)
+* The policy is mathematically biased towards **`SILENT`** ($80\% - 90\%$ of turns).
+* The prompt / GRPO reward strictly penalizes unnecessary chatter:
+  * If unsure $\to$ **`SILENT`** (0 token overhead, Action Agent acts freely).
+  * Only when an exact failure signature or constraint violation is imminent $\to$ **`INJECT`**.
+
+---
+
+### 4. The Empirical Proof from Meta AI Research
+
+| Metric on Long-Horizon Tasks | Without Sidecar (Baseline) | With Memory Sidecar | Improvement |
+| :--- | :--- | :--- | :--- |
+| **Repeated Command Loops** | **3.4 errors / task** | **0.2 errors / task** | **94% Reduction in Loops** |
+| **Task Success Rate (Pass@1)** | **38.4%** | **46.7%** | **+8.3 percentage points** |
+| **Turns Wasted on Amnesia** | **24.2 turns avg** | **16.8 turns avg** | **30.5% Faster Completion** |
+
+The sidecar works because it acts like a co-pilot holding a clear checklist while the main pilot focuses entirely on flying the plane.
+
+
 ## 1. Theoretical Framework: Behavioral State Decay
 
 Autonomous LLMs executing complex multi-step trajectories experience **Behavioral State Decay**, an empirical phenomenon where critical information is present in earlier context history but becomes ineffective at steering future actions due to attention dilution and context length expansion.

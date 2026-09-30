@@ -19,7 +19,7 @@ Complex, long-horizon tasks (such as software engineering, repository refactorin
 
 ## Research Foundation & Benchmarks
 
-* **Research Origin**: Meta AI research on autonomous agent memory companions. Full breakdown in [Research Paper Notes](file:///c:/Desktop/new-workspace/my-cute-agents/agent-memory-manager/docs/research_paper_notes.md).
+* **Research Origin**: Meta AI research on autonomous agent memory companions. Read the complete [Readable Paper Breakdown](file:///c:/Desktop/new-workspace/my-cute-agents/agent-memory-manager/docs/ORIGINAL_PAPER_READABLE.md) and [Original Research Paper (PDF)](file:///c:/Desktop/new-workspace/my-cute-agents/agent-memory-manager/paper.pdf).
 * **arXiv Paper**: *Remember When It Matters: Proactive Memory Agent for Long-Horizon Agents* ([arXiv:2607.08716](https://arxiv.org/abs/2607.08716)).
 * **Benchmark**: Evaluated on **$\tau^2$-Bench** (tau2-bench) and **Terminal-Bench 2.0** for long-horizon multi-step tasks.
 * **Empirical Results**:

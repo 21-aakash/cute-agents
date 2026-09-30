@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proactive Memory Agent Arena | Meta AI (arXiv:2607.08716)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="navbar">
+      <div class="brand">
+        <div class="logo-badge">M</div>
+        <div>
+          <h1 class="title">Proactive Memory Agent Arena</h1>
+          <p class="subtitle">Implementation of Meta AI Research <code>arXiv:2607.08716</code> (SFT + GRPO Policy)</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="status-pill ready" id="system-status">System Ready</span>
+        <button class="btn btn-primary" id="run-btn" onclick="startBenchmark()">
+          <span class="btn-icon">&#9658;</span> Run Live Benchmark
+        </button>
+      </div>
+    </header>
+
+    <!-- Top KPI Dashboard -->
+    <section class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Target Silence Ratio (&rho;)</div>
+        <div class="kpi-value green" id="kpi-silence">85.7%</div>
+        <div class="kpi-sub">Optimal Range: 80% - 90%</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Token Overhead (Silent Turns)</div>
+        <div class="kpi-value cyan" id="kpi-tokens">0 Tokens</div>
+        <div class="kpi-sub">Preserves attention context</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Error Loop Reduction</div>
+        <div class="kpi-value purple" id="kpi-reduction">94.0%</div>
+        <div class="kpi-sub">Terminal-Bench 2.0 result</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Execution Status</div>
+        <div class="kpi-value yellow" id="kpi-status">Idle</div>
+        <div class="kpi-sub" id="kpi-step-info">Ready to execute SDLC workflow</div>
+      </div>
+    </section>
+
+    <!-- Main Arena: Dual Column Execution + Structured Memory Bank -->
+    <main class="arena-grid">
+      <!-- Left Column: Baseline Agent -->
+      <section class="terminal-panel baseline-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="dot yellow-dot"></span>
+            <h2>Baseline Agent (No Memory Sidecar)</h2>
+          </div>
+          <span class="tag tag-warn">Suffers State Decay</span>
+        </div>
+        <div class="terminal-body" id="baseline-logs">
+          <div class="placeholder-msg">Click "Run Live Benchmark" to execute the baseline workflow...</div>
+        </div>
+      </section>
+
+      <!-- Right Column: Proactive Memory Agent -->
+      <section class="terminal-panel proactive-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="dot green-dot"></span>
+            <h2>Proactive Memory Agent (Meta AI Sidecar)</h2>
+          </div>
+          <span class="tag tag-success">Selective Injections Active</span>
+        </div>
+        <div class="terminal-body" id="proactive-logs">
+          <div class="placeholder-msg">Click "Run Live Benchmark" to observe selective sidecar interventions...</div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Inspector: Live Structured Memory Bank -->
+    <section class="memory-inspector">
+      <div class="inspector-header">
+        <div class="inspector-title">
+          <h3>Structured Memory Bank State (&Mscr;)</h3>
+          <span class="math-badge">&Mscr; = {&Mscr;<sub>status</sub>, &Mscr;<sub>knowledge</sub>, &Mscr;<sub>procedural</sub>}</span>
+        </div>
+        <div class="inspector-status" id="memory-sync-status">Live Sidecar State (Updated via Post-Observation Hook)</div>
+      </div>
+
+      <div class="memory-grid">
+        <!-- Status Memory -->
+        <div class="memory-card">
+          <div class="card-head">
+            <span class="card-icon">&bull;</span>
+            <h4>Status Memory (&Mscr;<sub>status</sub>)</h4>
+          </div>
+          <div class="card-content" id="mem-status-content">
+            <div class="empty-state">No active subgoals recorded yet</div>
+          </div>
+        </div>
+
+        <!-- Knowledge Memory -->
+        <div class="memory-card">
+          <div class="card-head">
+            <span class="card-icon">&bull;</span>
+            <h4>Knowledge Memory (&Mscr;<sub>knowledge</sub>)</h4>
+          </div>
+          <div class="card-content" id="mem-knowledge-content">
+            <div class="empty-state">Immutable constraints registered: No migrate:reset</div>
+          </div>
+        </div>
+
+        <!-- Procedural Memory -->
+        <div class="memory-card">
+          <div class="card-head">
+            <span class="card-icon">&bull;</span>
+            <h4>Procedural Memory (&Mscr;<sub>procedural</sub>)</h4>
+          </div>
+          <div class="card-content" id="mem-procedural-content">
+            <div class="empty-state">No failed attempts detected</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
