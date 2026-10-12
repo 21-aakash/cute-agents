@@ -293,3 +293,68 @@ export async function runEval(
   if (!res.ok) throw new Error(await parseError(res));
   return res.json();
 }
+
+/* ---------------- Auth API ---------------- */
+
+export async function loginApi(
+  apiBase: string,
+  data: { email: string; password: string },
+): Promise<import('../types').AuthSession> {
+  const res = await fetch(`${apiBase}/api/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function registerApi(
+  apiBase: string,
+  data: { email: string; password: string; full_name?: string },
+): Promise<import('../types').AuthSession> {
+  const res = await fetch(`${apiBase}/api/v1/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function googleAuthApi(
+  apiBase: string,
+  data: { email: string; full_name?: string; avatar_url?: string; credential?: string },
+): Promise<import('../types').AuthSession> {
+  const res = await fetch(`${apiBase}/api/v1/auth/google`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function forgotPasswordApi(
+  apiBase: string,
+  email: string,
+): Promise<{ ok: boolean; message: string; demo_reset_token?: string }> {
+  const res = await fetch(`${apiBase}/api/v1/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function getMeApi(
+  apiBase: string,
+  token: string,
+): Promise<import('../types').AuthSession> {
+  const res = await fetch(`${apiBase}/api/v1/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}

@@ -9,8 +9,13 @@ DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1"
 
 class Settings(BaseSettings):
     # Project Identity
-    project_name: str = "CareerOps AI"
-    project_description: str = "Autonomous Career Due-Diligence & Deep Research Agent"
+    project_name: str = "Nexus AI"
+    project_description: str = "Autonomous Multi-Agent Intelligence & Productivity OS"
+
+    # JWT Authentication
+    jwt_secret: str = "nexus-ai-super-secret-key-change-in-production-2026"
+    jwt_algorithm: str = "HS256"
+    jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
 
     # Load .env or .ENV (either works)
     model_config = SettingsConfigDict(env_file=(".env", ".ENV"), extra="ignore")

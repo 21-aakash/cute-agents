@@ -56,14 +56,33 @@ class GUID(TypeDecorator):
         return uuid.UUID(value)
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    full_name = Column(String(255), nullable=True)
+    hashed_password = Column(String(255), nullable=True)
+    avatar_url = Column(String(512), nullable=True)
+    is_active = Column(Boolean, default=True, nullable=False)
+    auth_provider = Column(String(50), default="email", nullable=False)
+    reset_token = Column(String(255), nullable=True)
+    reset_token_expires_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+    workspaces = relationship("Workspace", back_populates="user", cascade="all, delete-orphan")
+
+
 class Workspace(Base):
     __tablename__ = "workspaces"
 
     id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID(), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
     name = Column(String(255), nullable=False)
     api_key = Column(String(255), unique=True, nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
 
+    user = relationship("User", back_populates="workspaces")
     documents = relationship("Document", back_populates="workspace", cascade="all, delete-orphan")
     sessions = relationship("ChatSession", back_populates="workspace", cascade="all, delete-orphan")
 

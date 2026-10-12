@@ -4,12 +4,14 @@ import {
   ChevronRight, Brain, Clock, Plus, Zap, AlertTriangle, Play, CheckCircle2,
   Upload, X, ToggleLeft, ToggleRight, Loader2, BookOpen, FilePdf,
   FileSpreadsheet, FileCode, File, Trash2, ChevronDown, Database, Eye, EyeOff, Square,
-  BarChart3,
+  BarChart3, LogOut,
 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import * as api from './api/client';
+import { useAuth } from './context/AuthContext';
 import { useWorkspace } from './context/WorkspaceContext';
+import { AuthPage } from './components/auth/AuthPage';
 import type { ChatMessage, ChatResponse, DocumentRecord, RunMarker } from './types';
 import {
   CollapsiblePipeline,
@@ -1002,6 +1004,7 @@ function SettingsModal({ open, onClose }: { open: boolean; onClose: () => void }
 // ── Root ─────────────────────────────────────────────────────────────────────
 
 export default function App() {
+  const { isAuthenticated, isLoading: authLoading, user, logout } = useAuth();
   const [view, setView] = useState<View>('chat');
   const [collapsed, setCollapsed] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -1018,6 +1021,21 @@ export default function App() {
   const handleDeleteSession = async (id: string) => {
     await deleteSession(id);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#0b0f17] text-slate-200">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+          <span className="text-xs text-slate-400 font-medium">Initializing Nexus AI...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthPage />;
+  }
 
   return (
     <div className="flex h-screen w-full overflow-hidden text-sm flex-col">
@@ -1047,13 +1065,16 @@ export default function App() {
           "h-14 flex items-center border-b border-glass-border shrink-0 transition-all duration-300",
           collapsed ? "justify-center px-0" : "gap-3 px-4"
         )}>
-          <div className="w-8 h-8 rounded-md bg-primary/20 flex items-center justify-center text-primary border border-primary/30 shrink-0">
-            <Zap size={18} />
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20 shrink-0">
+            <Zap size={16} />
           </div>
           {!collapsed && (
-            <span className="font-semibold text-[15px] whitespace-nowrap overflow-hidden flex items-center gap-2">
-              CareerOps AI
-              {connected && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" title="Connected" />}
+            <span className="font-bold text-[15px] whitespace-nowrap overflow-hidden flex items-center gap-1.5 text-slate-100">
+              Nexus AI
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-mono font-medium border border-blue-500/30">
+                OS
+              </span>
+              {connected && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ml-1" title="Connected" />}
             </span>
           )}
         </div>
@@ -1127,6 +1148,28 @@ export default function App() {
           )}
         </div>
 
+        {/* User Badge & Sign Out */}
+        {!collapsed && user && (
+          <div className="px-3 py-2.5 border-t border-glass-border flex items-center justify-between gap-2 shrink-0 bg-slate-900/40">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold uppercase shrink-0 ring-1 ring-white/10">
+                {user.full_name ? user.full_name.charAt(0) : user.email.charAt(0)}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-medium text-slate-200 truncate">{user.full_name || user.email}</div>
+                <div className="text-[10px] text-slate-400 truncate">{user.email}</div>
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              title="Sign Out"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0"
+            >
+              <LogOut size={15} />
+            </button>
+          </div>
+        )}
+
         {/* Footer */}
         <div className={cn(
           "p-3 border-t border-glass-border flex items-center shrink-0",
@@ -1140,7 +1183,12 @@ export default function App() {
               <IconButton icon={Settings} title="Settings" onClick={() => setSettingsOpen(true)} />
             </>
           )}
-          {collapsed && <IconButton icon={Settings} title="Settings" onClick={() => setSettingsOpen(true)} />}
+          {collapsed && (
+            <>
+              <IconButton icon={Settings} title="Settings" onClick={() => setSettingsOpen(true)} />
+              {user && <IconButton icon={LogOut} title="Sign Out" onClick={logout} className="text-rose-400 hover:bg-rose-500/10" />}
+            </>
+          )}
           <IconButton
             icon={collapsed ? ChevronRight : ChevronRight}
             onClick={() => setCollapsed(v => !v)}

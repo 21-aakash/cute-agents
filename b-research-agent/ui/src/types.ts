@@ -75,6 +75,21 @@ export interface WorkspaceRecord {
   api_key: string;
 }
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  full_name?: string | null;
+  avatar_url?: string | null;
+  auth_provider: string;
+}
+
+export interface AuthSession {
+  access_token: string;
+  token_type: string;
+  user: UserProfile;
+  workspace: WorkspaceRecord;
+}
+
 export interface SessionRecord {
   id: string;
   title: string;

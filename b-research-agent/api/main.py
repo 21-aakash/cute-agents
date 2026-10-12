@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from api.deps import init_runner
-from api.routes import chat, documents, evals, memory, workspaces
+from api.routes import auth, chat, documents, evals, memory, workspaces
 from db.session import engine, init_db
 from services.logging_config import RequestLoggingMiddleware, configure_logging
 from services.vectorstore import VectorStore
@@ -48,7 +48,7 @@ async def lifespan(_app: FastAPI):
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="CareerOps AI API", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="Nexus AI API", version="0.1.0", lifespan=lifespan)
     app.add_middleware(RequestLoggingMiddleware)
     app.add_middleware(
         CORSMiddleware,
@@ -63,6 +63,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(health_router)
+    app.include_router(auth.router, prefix="/api/v1")
     app.include_router(workspaces.router, prefix="/api/v1")
     app.include_router(documents.router, prefix="/api/v1")
     app.include_router(chat.router, prefix="/api/v1")
