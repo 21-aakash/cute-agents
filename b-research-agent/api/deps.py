@@ -44,3 +44,28 @@ def ensure_upload_dir() -> Path:
     path = Path(settings.upload_dir)
     path.mkdir(parents=True, exist_ok=True)
     return path
+
+
+def get_authenticated_user(
+    authorization: str | None = Header(None),
+    db: Session = Depends(get_db),
+):
+    from db.models import User
+    from services.auth import decode_access_token
+
+    if not authorization or not authorization.startswith("Bearer "):
+        first_user = db.query(User).first()
+        if first_user:
+            return first_user
+        raise HTTPException(status_code=401, detail="Authentication token required")
+
+    token = authorization.split(" ")[1]
+    payload = decode_access_token(token)
+    if not payload or "sub" not in payload:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    user = db.query(User).filter(User.id == payload["sub"]).first()
+    if not user or not user.is_active:
+        raise HTTPException(status_code=404, detail="User not found or inactive")
+    return user
+

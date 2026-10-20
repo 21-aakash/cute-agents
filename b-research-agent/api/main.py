@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from api.deps import init_runner
-from api.routes import auth, chat, documents, evals, memory, workspaces
+from api.routes import auth, chat, documents, evals, memory, todos, workspaces
 from db.session import engine, init_db
 from services.logging_config import RequestLoggingMiddleware, configure_logging
 from services.vectorstore import VectorStore
@@ -69,6 +69,7 @@ def create_app() -> FastAPI:
     app.include_router(chat.router, prefix="/api/v1")
     app.include_router(evals.router, prefix="/api/v1")
     app.include_router(memory.router, prefix="/api/v1")
+    app.include_router(todos.router, prefix="/api/v1")
     return app
 
 

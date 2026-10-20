@@ -1,65 +1,109 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..800;1,14..32,300..800&display=swap');
 @import 'tailwindcss';
 
 @theme {
-  --color-background-start: #f8fafc;
-  --color-background-end: #e2e8f0;
-  
-  --color-glass-bg: rgba(255, 255, 255, 0.6);
-  --color-glass-bg-elevated: rgba(255, 255, 255, 0.9);
-  --color-glass-border: rgba(0, 0, 0, 0.08);
-  
-  --color-primary: #3b82f6;
-  --color-primary-hover: #2563eb;
-  --color-success: #16a34a;
-  --color-warning: #d97706;
-  --color-error: #dc2626;
+  /* ── Background ── */
+  --color-bg:              #f9fafb;
+  --color-bg-alt:          #f3f4f6;
+  --color-surface:         #ffffff;
+  --color-surface-alt:     #f9fafb;
 
-  --color-text-body: rgba(15, 23, 42, 0.95);
-  --color-text-muted: rgba(15, 23, 42, 0.6);
+  /* ── Glass ── */
+  --color-glass-bg:          rgba(255, 255, 255, 0.7);
+  --color-glass-bg-elevated: rgba(255, 255, 255, 0.95);
+  --color-glass-border:      rgba(0, 0, 0, 0.07);
+  --color-glass-border-mid:  rgba(0, 0, 0, 0.10);
 
-  --font-sans: 'Inter', sans-serif;
+  /* ── Brand ── */
+  --color-primary:           #2563eb;
+  --color-primary-light:     #dbeafe;
+  --color-primary-hover:     #1d4ed8;
+
+  /* ── Agents ── */
+  --color-research:          #6366f1;   /* Indigo */
+  --color-career:            #0ea5e9;   /* Sky */
+  --color-ops:               #10b981;   /* Emerald */
+
+  /* ── Semantic ── */
+  --color-success:           #16a34a;
+  --color-warning:           #d97706;
+  --color-error:             #dc2626;
+
+  /* ── Text ── */
+  --color-text-body:         #111827;
+  --color-text-muted:        #6b7280;
+  --color-text-faint:        #9ca3af;
+
+  /* ── Font ── */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-:root {
-  color-scheme: light;
+:root { color-scheme: light; }
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
 }
 
 body {
   font-family: var(--font-sans);
-  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.12) 0%, transparent 40%),
-              linear-gradient(to bottom, var(--color-background-start), var(--color-background-end));
-  background-attachment: fixed;
+  font-size: 14px;
+  line-height: 1.5;
+  background-color: var(--color-bg);
   color: var(--color-text-body);
-  margin: 0;
-  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glassmorphism utilities */
-.glass-panel {
+/* ── Glass ── */
+.glass {
   background: var(--color-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-glass-border);
+}
+
+.glass-elevated {
+  background: var(--color-glass-bg-elevated);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--color-glass-border-mid);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+
+/* Legacy aliases — used by existing chat/marker components */
+.glass-panel {
+  background: var(--color-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--color-glass-border);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 .glass-panel-elevated {
   background: var(--color-glass-bg-elevated);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--color-glass-border);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--color-glass-border-mid);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-}
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+/* ── Sidebar ── */
+.sidebar {
+  background: #ffffff;
+  border-right: 1px solid var(--color-glass-border);
 }
 
+/* ── Scrollbar ── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 99px; }
+
+/* ── Animations ── */
 @keyframes indexing {
   0%   { width: 10%; opacity: 0.7; }
   50%  { width: 80%; opacity: 1; }
@@ -71,16 +115,41 @@ body {
   100% { background-position: -200% center; }
 }
 
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.8); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .shimmer {
   background: linear-gradient(
     90deg,
-    rgba(15, 23, 42, 0.45) 0%,
-    rgba(15, 23, 42, 0.85) 50%,
-    rgba(15, 23, 42, 0.45) 100%
+    var(--color-text-muted) 0%,
+    var(--color-text-body)  50%,
+    var(--color-text-muted) 100%
   );
   background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  animation: shimmer 2.2s linear infinite;
+  animation: shimmer 2s linear infinite;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.18s ease-out both;
+}
+
+/* ── Focus Ring ── */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Input base ── */
+input, textarea {
+  font-family: inherit;
 }

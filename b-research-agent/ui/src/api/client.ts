@@ -358,3 +358,115 @@ export async function getMeApi(
   if (!res.ok) throw new Error(await parseError(res));
   return res.json();
 }
+
+/* ---------------- Todos API ---------------- */
+
+export async function listTodosApi(
+  apiBase: string,
+  token?: string | null,
+  horizon?: string,
+  statusFilter?: string,
+): Promise<import('../types').TodoRecord[]> {
+  const url = new URL(`${apiBase || window.location.origin}/api/v1/todos`);
+  if (horizon && horizon !== 'all') url.searchParams.set('horizon', horizon);
+  if (statusFilter && statusFilter !== 'all') url.searchParams.set('status', statusFilter);
+
+  const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+  const res = await fetch(url.toString(), { headers: authHeaders });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function createTodoApi(
+  apiBase: string,
+  token: string | null,
+  data: {
+    title: string;
+    description?: string;
+    horizon?: string;
+    priority?: string;
+    tags?: string[];
+    due_date?: string | null;
+  },
+): Promise<import('../types').TodoRecord> {
+  const authHeaders: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  const res = await fetch(`${apiBase}/api/v1/todos`, {
+    method: 'POST',
+    headers: authHeaders,
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function updateTodoApi(
+  apiBase: string,
+  token: string | null,
+  todoId: string,
+  partial: Partial<{
+    title: string;
+    description: string;
+    horizon: string;
+    priority: string;
+    status: string;
+    due_date: string | null;
+    tags: string[];
+  }>,
+): Promise<import('../types').TodoRecord> {
+  const authHeaders: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  const res = await fetch(`${apiBase}/api/v1/todos/${todoId}`, {
+    method: 'PATCH',
+    headers: authHeaders,
+    body: JSON.stringify(partial),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function deleteTodoApi(
+  apiBase: string,
+  token: string | null,
+  todoId: string,
+): Promise<{ ok: boolean }> {
+  const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+  const res = await fetch(`${apiBase}/api/v1/todos/${todoId}`, {
+    method: 'DELETE',
+    headers: authHeaders,
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function getTodoStatsApi(
+  apiBase: string,
+  token?: string | null,
+): Promise<import('../types').TodoStats> {
+  const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+  const res = await fetch(`${apiBase}/api/v1/todos/stats`, { headers: authHeaders });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function parseInputTodosApi(
+  apiBase: string,
+  token: string | null,
+  text: string,
+): Promise<{ extracted_count: number; summary: string; todos: import('../types').TodoRecord[] }> {
+  const authHeaders: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+  const res = await fetch(`${apiBase}/api/v1/todos/parse-input`, {
+    method: 'POST',
+    headers: authHeaders,
+    body: JSON.stringify({ text }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}

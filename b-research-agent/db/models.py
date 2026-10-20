@@ -71,6 +71,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     workspaces = relationship("Workspace", back_populates="user", cascade="all, delete-orphan")
+    todos = relationship("TodoItem", back_populates="user", cascade="all, delete-orphan")
 
 
 class Workspace(Base):
@@ -109,6 +110,7 @@ class ChatSession(Base):
     id = Column(GUID(), primary_key=True, default=uuid.uuid4)
     workspace_id = Column(GUID(), ForeignKey("workspaces.id", ondelete="CASCADE"), nullable=False, index=True)
     title = Column(String(255), default="New Chat", nullable=False)
+    summary = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     workspace = relationship("Workspace", back_populates="sessions")
@@ -173,3 +175,22 @@ class EvalSample(Base):
     created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
 
     eval_run = relationship("EvalRun", back_populates="samples")
+
+
+class TodoItem(Base):
+    __tablename__ = "todos"
+
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    title = Column(String(512), nullable=False)
+    description = Column(Text, nullable=True)
+    horizon = Column(String(50), default="daily", nullable=False, index=True)  # daily | weekly | monthly | yearly
+    status = Column(String(50), default="pending", nullable=False, index=True)  # pending | completed | archived
+    priority = Column(String(50), default="medium", nullable=False)  # low | medium | high
+    tags = Column(JSON, nullable=True, default=list)
+    due_date = Column(DateTime(timezone=True), nullable=True)
+    completed_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow, nullable=False)
+
+    user = relationship("User", back_populates="todos")
+
