@@ -2,7 +2,7 @@
 ### Collection of AI system paradigms
 
 <p align="center">
-  <img src="./assets/banner.jpg" alt="Family of AI Agents" width="100%" />
+  <img src="./assets/banner.jpg" alt="Family of Cute Onion AI Agents Mascot" width="100%" />
 </p>
 
 ---
