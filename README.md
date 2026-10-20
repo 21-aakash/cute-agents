@@ -1,4 +1,4 @@
-# cute-agents
+# onion-agents
 ### Curated Collection of Autonomous AI System Paradigms
 
 <p align="center">
@@ -26,7 +26,7 @@ A curated, production-grade monorepo featuring specialized AI agent architecture
 ## 📂 Monorepo Structure
 
 ```
-my-cute-agents/
+onion-agents/
 ├── assets/
 │   └── banner.jpg               # Cute onion mascot family banner
 ├── Refundbot/                   # Paradigm 01: Policy guardrails & transaction decision engine
@@ -73,13 +73,13 @@ Set the **Root Directory** (or **Base Directory**) in your service settings:
 Build images directly targeting each agent directory:
 ```bash
 # Build Refundbot
-docker build -t cute-agents/refundbot ./Refundbot
+docker build -t onion-agents/refundbot ./Refundbot
 
 # Build Research Agent API
-docker build -t cute-agents/research-agent ./b-research-agent
+docker build -t onion-agents/research-agent ./b-research-agent
 
 # Build DSPy Self-Tuning Studio
-docker build -t cute-agents/dspy-studio ./dspy-self-tuning-agent
+docker build -t onion-agents/dspy-studio ./dspy-self-tuning-agent
 ```
 
 ### 3. GitHub Actions CI/CD

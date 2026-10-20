@@ -2,7 +2,7 @@
 
 **Topic**: The Prompt Engineering Lifecycle & Why DSPy is the Missing Piece  
 **Author Voice**: AI Practitioner / Systems Engineer Building Autonomous Agents  
-**Project Reference**: `my-cute-agents/dspy-self-tuning-agent`
+**Project Reference**: `onion-agents/dspy-self-tuning-agent`
 
 ---
 

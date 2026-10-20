@@ -1,4 +1,4 @@
-# Cute Agents -- Monorepo Agent Directory
+# Onion Agents -- Monorepo Agent Directory
 
 This repository hosts a curated collection of specialized autonomous AI agents implementing different foundational architectural patterns and system paradigms.
 
@@ -8,7 +8,7 @@ This repository hosts a curated collection of specialized autonomous AI agents i
 
 ```mermaid
 graph TD
-    subgraph Monorepo["cute-agents (The Onion Mascot Collective)"]
+    subgraph Monorepo["onion-agents (The Onion Mascot Collective)"]
         A["<b>01. Refundbot</b><br/><i>(Deterministic Policy & Tool Guardrail)</i>"]
         B["<b>02. Research Assistant</b><br/><i>(Multi-Agent LangGraph DAG)</i>"]
         C["<b>03. Memory Manager</b><br/><i>(Event-Driven Memory Sidecar)</i>"]

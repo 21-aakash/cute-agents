@@ -3,7 +3,7 @@
 ## Selected Use Case: FinTech / E-Commerce Autonomous Refund & Dispute Triage
 
 ### Why this use case?
-1. **Repository Synergy**: It directly expands on the existing `Refundbot` in `my-cute-agents`, elevating it from a static rule-checker to an **optimizing self-tuning AI agent**.
+1. **Repository Synergy**: It directly expands on the existing `Refundbot` in `onion-agents`, elevating it from a static rule-checker to an **optimizing self-tuning AI agent**.
 2. **Multi-Constraint Reasoning**: Realistic production tasks have complex policies:
    - Standard customers: Return allowed within **30 days** of delivery.
    - VIP / Platinum customers: Extended return window up to **45 days**.

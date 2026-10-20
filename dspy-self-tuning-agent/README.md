@@ -1,7 +1,7 @@
 # DSPy Self-Tuning Agent Studio
 ### Paradigm 5: Automated Compilation & Drift-Healing vs Prompt Brittleness
 
-Part of the **[cute-agents](../README.md)** system paradigms collection.
+Part of the **[onion-agents](../README.md)** system paradigms collection.
 
 ---
 
