@@ -18,6 +18,7 @@ A curated monorepo featuring specialized AI agent architectures, multi-agent wor
 | **[Refundbot](./Refundbot)** | **Deterministic Guardrail & Tool-Calling Agent** | Python, FastAPI, SQLite / PostgreSQL | Customer service and refund decision engine with policy evaluation, fraud scoring, and audit trails. |
 | **[Research Assistant (`b-research-agent`)](./b-research-agent)** | **Multi-Agent Directed Graph (DAG)** | LangGraph, FastAPI, Qdrant Vector DB, React 18 | Multi-agent autonomous research assistant: Planner -> Research -> Writer -> Critic -> Persist with fact-checking loops and evaluation dashboard. |
 | **[Agent Memory Manager](./agent-memory-manager)** | **External Memory Companion & Sidecar** | Python, Event-driven Memory Sidecar | Dedicated companion agent tracking environment errors and providing targeted memory reminders to improve long-horizon task completion. |
+| **[DSPy Self-Tuning Agent](./dspy-self-tuning-agent)** | **Optimization & Compilation Paradigm** | Python, DSPy, BootstrapFewShot, FastAPI | Self-optimizing policy dispute engine: Auto-compiles prompts against data drift and model swaps, cutting costs 15x with 100% schema integrity. |
 
 ---
 
@@ -38,6 +39,11 @@ my-cute-agents/
 ├── agent-memory-manager/        # Memory companion & state tracker
 │   ├── AGENTS.md                # Memory companion specification
 │   └── readme.md
+├── dspy-self-tuning-agent/      # DSPy optimization & drift-healing studio
+│   ├── agent/                   # DSPy signatures, datasets, evaluators
+│   ├── web/                     # Interactive 3-Panel comparison dashboard
+│   ├── server.py                # FastAPI simulation backend
+│   └── README.md
 ├── AGENTS.md                    # Monorepo agent directory & standards
 └── README.md                    # Main overview & deployment guide
 ```
