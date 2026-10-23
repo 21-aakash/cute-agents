@@ -90,6 +90,34 @@ export interface AuthSession {
   workspace: WorkspaceRecord;
 }
 
+export type TodoHorizon = 'daily' | 'weekly' | 'monthly' | 'yearly';
+export type TodoPriority = 'low' | 'medium' | 'high';
+export type TodoStatus = 'pending' | 'completed' | 'archived';
+
+export interface TodoRecord {
+  id: string;
+  user_id: string;
+  title: string;
+  description?: string | null;
+  horizon: TodoHorizon;
+  status: TodoStatus;
+  priority: TodoPriority;
+  tags: string[];
+  due_date?: string | null;
+  completed_at?: string | null;
+  created_at: string;
+}
+
+export interface TodoStats {
+  total: number;
+  completed: number;
+  pending: number;
+  daily: { total: number; completed: number };
+  weekly: { total: number; completed: number };
+  monthly: { total: number; completed: number };
+  yearly: { total: number; completed: number };
+}
+
 export interface SessionRecord {
   id: string;
   title: string;

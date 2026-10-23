@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DSPy Studio — Model Drift & Multi-Agent Pipeline Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="vintage-tech" id="app-body">
+  <div class="crt-overlay"></div>
+  
+  <div class="console-wrapper">
+    <!-- Top Master Paradigm Switcher Bar -->
+    <nav class="paradigm-mode-bar">
+      <div class="mode-bar-left">
+        <span class="sys-chip">DSPY LAB PROTOCOL</span>
+        <button id="tab-model-swap" class="mode-btn active" onclick="switchMode('model-swap')">
+          <span class="mode-icon">◈</span> PARADIGM 5A: MODEL SWAP HEALING [VINTAGE CONSOLE]
+        </button>
+        <button id="tab-multi-agent" class="mode-btn navy-btn" onclick="switchMode('multi-agent')">
+          <span class="mode-icon">⚡</span> PARADIGM 5B: MULTI-AGENT CASCADE [NAVY BLUE]
+        </button>
+      </div>
+      <div class="system-time" id="system-time-display">2026.10 // ACTIVE</div>
+    </nav>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: PARADIGM 5A - MODEL DRIFT & SWAP (VINTAGE BEIGE / BROWN)           -->
+    <!-- ========================================================================= -->
+    <div id="view-model-swap" class="paradigm-view">
+      <!-- Header Unit -->
+      <header class="console-header">
+        <div class="header-stamp-block">
+          <div class="serial-tag">SYS-DSPY // SPEC-2026-P5A</div>
+          <div class="header-main-title">
+            <span class="mono-symbol">◈</span>
+            <h1>DSPY TELEPROMPTER CALIBRATION CONSOLE</h1>
+            <span class="version-tag">VER 3.4.1</span>
+          </div>
+          <p class="chassis-subtitle">PARADIGM 05A: ALGORITHMIC PROMPT COMPILATION vs MODEL SWAP DEGRADATION</p>
+        </div>
+
+        <div class="header-control-cluster">
+          <div class="dial-unit">
+            <span class="dial-label">DATASET REGIME:</span>
+            <div class="mechanical-toggle">
+              <button id="btn-standard" class="toggle-notch" onclick="setDataset('standard')">[STD_SET]</button>
+              <button id="btn-drifted" class="toggle-notch active" onclick="setDataset('drifted')">
+                <span class="blinking-amber">●</span> [DRIFT_V2]
+              </button>
+            </div>
+          </div>
+
+          <button id="btn-optimize" class="mechanical-button primary" onclick="triggerOptimization()">
+            <span class="btn-bracket">[</span><span class="btn-icon">⚡</span> COMPILE TELEPROMPTER<span class="btn-bracket">]</span>
+          </button>
+
+          <button id="btn-inspect" class="mechanical-button" onclick="openPromptModal()">
+            <span class="btn-bracket">[</span>INSPECT PROMPT AST<span class="btn-bracket">]</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Calibration & Case Selector Rack -->
+      <section class="test-bench-rack">
+        <div class="rack-strip-top">
+          <span class="rack-label">TEST_CASE_INSPECTOR // INPUT VECTOR</span>
+          <div class="rack-rule-line"></div>
+          <span class="rack-status-text">LIVE GROQ INFERENCE BACKEND</span>
+        </div>
+
+        <div class="rack-content-row">
+          <div class="selector-container">
+            <label for="case-select" class="field-hdr">LOAD DISPUTE SPECIMEN:</label>
+            <div class="select-shell">
+              <select id="case-select" onchange="onCaseSelectChange()">
+                <!-- Dynamic population -->
+              </select>
+            </div>
+          </div>
+
+          <div class="telemetry-grid" id="dispute-preview">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Benchmark Telemetry Meter -->
+      <section class="instrument-telemetry-bank">
+        <div class="meter-column">
+          <div class="meter-head">
+            <span class="meter-id">MTR-01</span>
+            <span class="meter-name">FRONTIER CALIBRATED (GPT-OSS-120B)</span>
+          </div>
+          <div class="meter-numeric-readout">
+            <span class="readout-val" id="bm-p1-acc">100%</span>
+            <span class="readout-unit">ACC</span>
+          </div>
+          <div class="meter-tape">
+            <div class="tape-bar" style="width: 100%;"></div>
+          </div>
+          <div class="meter-footer-data">
+            <span>COST: $2.50/100k</span>
+            <span>SCHEMA: OK 100%</span>
+          </div>
+        </div>
+
+        <div class="meter-column warning-meter">
+          <div class="meter-head">
+            <span class="meter-id">MTR-02</span>
+            <span class="meter-name">MODEL SHIFT (QWEN-27B UNCOMPILED)</span>
+          </div>
+          <div class="meter-numeric-readout warning">
+            <span class="readout-val" id="bm-p2-acc">25%</span>
+            <span class="readout-unit">ACC</span>
+          </div>
+          <div class="meter-tape warning-tape">
+            <div class="tape-bar" style="width: 25%;"></div>
+          </div>
+          <div class="meter-footer-data warning">
+            <span>COST: $0.10/100k</span>
+            <span>SCHEMA: BREAK 25%</span>
+          </div>
+        </div>
+
+        <div class="meter-column success-meter">
+          <div class="meter-head">
+            <span class="meter-id">MTR-03</span>
+            <span class="meter-name">DSPY BOOTSTRAPFEWSHOT (COMPILED)</span>
+          </div>
+          <div class="meter-numeric-readout success">
+            <span class="readout-val" id="bm-p3-acc">100%</span>
+            <span class="readout-unit">ACC</span>
+          </div>
+          <div class="meter-tape success-tape">
+            <div class="tape-bar" style="width: 100%;"></div>
+          </div>
+          <div class="meter-footer-data success">
+            <span>COST: $0.10/100k</span>
+            <span>SCHEMA: RESTORED 100%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3-Panel Apparatus -->
+      <main class="triptych-grid">
+        <!-- PANEL 1 -->
+        <div class="apparatus-panel">
+          <div class="panel-bezel">
+            <div class="panel-legend">
+              <span class="channel-num">CH.01</span>
+              <div>
+                <h3>VANILLA PROMPT BASELINE</h3>
+                <span class="channel-sub" id="p1-model-sub">OPENAI/GPT-OSS-120B ON GROQ</span>
+              </div>
+            </div>
+            <span class="stamp-badge stamp-pass" id="p1-status">[ PASS // CALIBRATED ]</span>
+          </div>
+
+          <div class="spec-strip">
+            <span>LAT: <strong id="p1-latency">530ms</strong></span>
+            <span>TOKN: <strong id="p1-cost">$0.025 / 1k</strong></span>
+            <span>STATUS: <strong class="c-dark">PASS</strong></span>
+          </div>
+
+          <div class="terminal-screen">
+            <div class="screen-hdr">RAW TELETYPE STREAM [CHANNEL 01]</div>
+            <pre id="p1-output" class="screen-pre"></pre>
+          </div>
+
+          <div class="diagnostic-ledger" id="p1-notes">
+            <div class="ledger-row">[+] EXACT POLICY VERDICT ALIGNED</div>
+            <div class="ledger-row">[+] SCHEMA CONFORMS TO API SPEC</div>
+            <div class="ledger-row">[+] ZERO PAYOUT ON NEGATIVE CLAUSE</div>
+          </div>
+        </div>
+
+        <!-- PANEL 2 -->
+        <div class="apparatus-panel panel-breakdown">
+          <div class="panel-bezel">
+            <div class="panel-legend">
+              <span class="channel-num amber">CH.02</span>
+              <div>
+                <h3>DISTRIBUTION SHIFT BREAKAGE</h3>
+                <span class="channel-sub amber" id="p2-model-sub">QWEN/QWEN3.8-27B ON GROQ</span>
+              </div>
+            </div>
+            <span class="stamp-badge stamp-fail" id="p2-status">[ ANOMALY // DEGRADED ]</span>
+          </div>
+
+          <div class="spec-strip">
+            <span>LAT: <strong id="p2-latency">130ms</strong></span>
+            <span>TOKN: <strong id="p2-cost">$0.001 / 1k</strong></span>
+            <span>STATUS: <strong class="c-amber">SCHEMA_FAULT</strong></span>
+          </div>
+
+          <div class="terminal-screen screen-fault">
+            <div class="screen-hdr amber">FAULT TRACE [CHANNEL 02 — UNPARSED]</div>
+            <pre id="p2-output" class="screen-pre broken"></pre>
+          </div>
+
+          <div class="diagnostic-ledger fault-ledger" id="p2-notes">
+            <div class="ledger-row fail">[-] PARSER ABORT: CHAT PREAMBLE DETECTED</div>
+            <div class="ledger-row fail">[-] NON-COMPLIANCE: DIGITAL EXEMPTION IGNORED</div>
+          </div>
+        </div>
+
+        <!-- PANEL 3 -->
+        <div class="apparatus-panel panel-optimized">
+          <div class="panel-bezel">
+            <div class="panel-legend">
+              <span class="channel-num green">CH.03</span>
+              <div>
+                <h3>DSPY SELF-OPTIMIZED ENGINE</h3>
+                <span class="channel-sub green" id="p3-model-sub">QWEN/QWEN3.8-27B ON GROQ (COMPILED)</span>
+              </div>
+            </div>
+            <span class="stamp-badge stamp-opt" id="p3-status">[ OPTIMIZED // 100% HEALED ]</span>
+          </div>
+
+          <div class="spec-strip">
+            <span>LAT: <strong id="p3-latency">140ms</strong></span>
+            <span>TOKN: <strong id="p3-cost">$0.001 / 1k</strong></span>
+            <span>STATUS: <strong class="c-green">OPTIMAL_15X</strong></span>
+          </div>
+
+          <div class="terminal-screen screen-opt">
+            <div class="screen-hdr green">COMPILED AST OUTPUT [CHANNEL 03]</div>
+            <pre id="p3-output" class="screen-pre"></pre>
+          </div>
+
+          <div class="diagnostic-ledger opt-ledger" id="p3-notes">
+            <div class="ledger-row pass">[+] 100% REGRESSION RECOVERY AT COMPACT COST</div>
+            <div class="ledger-row pass">[+] COT RATIONALE ANCHORS POLICY RULES</div>
+            <div class="ledger-row pass">[+] ZERO HUMAN STRING HACKING REQUIRED</div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: PARADIGM 5B - MULTI-AGENT PIPELINE CASCADE (NAVY BLUE THEME)       -->
+    <!-- ========================================================================= -->
+    <div id="view-multi-agent" class="paradigm-view hidden">
+      <!-- Navy Header -->
+      <header class="navy-header">
+        <div class="navy-brand-group">
+          <div class="navy-badge">DAG // MULTI-AGENT</div>
+          <div>
+            <h2>MULTI-AGENT PIPELINE CASCADE STUDIO</h2>
+            <p class="navy-sub">PARADIGM 05B: JOINT END-TO-END COMPILATION ACROSS 3 CHAINED AGENT NODES</p>
+          </div>
+        </div>
+
+        <div class="navy-actions">
+          <button class="navy-action-btn primary" onclick="triggerMultiAgentCompilation()">
+            <span class="cyan-icon">⚡</span> COMPILE MULTI-AGENT PIPELINE
+          </button>
+        </div>
+      </header>
+
+      <!-- Multi-Agent Case Selector -->
+      <section class="navy-selector-rack">
+        <div class="navy-rack-hdr">
+          <span class="cyan-text">INPUT INGESTION VECTOR:</span>
+          <span>SELECT PRODUCTION TRANSCRIPT SPECIMEN</span>
+        </div>
+        <div class="navy-input-row">
+          <select id="navy-case-select" onchange="onNavyCaseSelectChange()">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+        <div class="navy-transcript-card" id="navy-raw-message">
+          <!-- Populated dynamically -->
+        </div>
+      </section>
+
+      <!-- Pipeline Visualization Canvas -->
+      <section class="navy-pipeline-canvas">
+        <!-- PIPELINE PATH A: UNCOMPILED CASCADING ERROR -->
+        <div class="pipeline-stream stream-uncompiled">
+          <div class="stream-title-bar fail">
+            <div class="stream-title">
+              <span class="stream-tag red">PATH A</span>
+              <h3>UNCOMPILED HANDCRAFTED AGENTS (DOMINO CASCADE)</h3>
+            </div>
+            <span class="badge-tag red" id="navy-path-a-badge">CASCADE FAILURE ⚠️</span>
+          </div>
+
+          <div class="nodes-chain-container">
+            <!-- Node 1 -->
+            <div class="agent-node-card">
+              <div class="node-header">
+                <span class="node-step">01</span>
+                <div>
+                  <h4>AGENT 1: EXTRACTOR</h4>
+                  <span class="node-sub">HANDCRAFTED ZERO-SHOT</span>
+                </div>
+              </div>
+              <div class="node-body">
+                <div class="node-data-hdr">EXTRACTED ENTITIES:</div>
+                <pre class="node-json-box red-tint" id="navy-a-node1"></pre>
+              </div>
+              <div class="node-alert red-text">⚠️ Emits ambiguous category, misses digital key invariant</div>
+            </div>
+
+            <div class="chain-connector failed-arrow">➔</div>
+
+            <!-- Node 2 -->
+            <div class="agent-node-card">
+              <div class="node-header">
+                <span class="node-step">02</span>
+                <div>
+                  <h4>AGENT 2: POLICY ENGINE</h4>
+                  <span class="node-sub">HANDCRAFTED RULE PROMPT</span>
+                </div>
+              </div>
+              <div class="node-body">
+                <div class="node-data-hdr">ADJUDICATION DECISION:</div>
+                <pre class="node-json-box red-tint" id="navy-a-node2"></pre>
+              </div>
+              <div class="node-alert red-text">⚠️ Misinterprets Agent 1 handoff; approves non-refundable item</div>
+            </div>
+
+            <div class="chain-connector failed-arrow">➔</div>
+
+            <!-- Node 3 -->
+            <div class="agent-node-card fatal-card">
+              <div class="node-header">
+                <span class="node-step">03</span>
+                <div>
+                  <h4>AGENT 3: TOOL DISPATCHER</h4>
+                  <span class="node-sub">API PAYLOAD FORMATTER</span>
+                </div>
+              </div>
+              <div class="node-body">
+                <div class="node-data-hdr">DISPATCHED GATEWAY CALL:</div>
+                <pre class="node-json-box red-tint" id="navy-a-node3"></pre>
+              </div>
+              <div class="node-alert red-text">❌ FATAL FINANCIAL BREACH: Wrongly issued refund payout</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PIPELINE PATH B: DSPY JOINT END-TO-END COMPILATION -->
+        <div class="pipeline-stream stream-compiled">
+          <div class="stream-title-bar pass">
+            <div class="stream-title">
+              <span class="stream-tag green">PATH B</span>
+              <h3>DSPY JOINTLY-COMPILED MULTI-AGENT PIPELINE</h3>
+            </div>
+            <span class="badge-tag green" id="navy-path-b-badge">100% PROTECTED SUCCESS ✅</span>
+          </div>
+
+          <div class="nodes-chain-container">
+            <!-- Node 1 -->
+            <div class="agent-node-card compiled-card">
+              <div class="node-header">
+                <span class="node-step cyan">01</span>
+                <div>
+                  <h4>AGENT 1: DSPY EXTRACTOR</h4>
+                  <span class="node-sub cyan">COMPILED DEMONSTRATION AST</span>
+                </div>
+              </div>
+              <div class="node-body">
+                <div class="node-data-hdr cyan-text">INVARIANT EXTRACTED TOKENS:</div>
+                <pre class="node-json-box cyan-tint" id="navy-b-node1"></pre>
+              </div>
+              <div class="node-alert cyan-text">✓ Anchored: Emits strict technical semantic invariant</div>
+            </div>
+
+            <div class="chain-connector pass-arrow">➔</div>
+
+            <!-- Node 2 -->
+            <div class="agent-node-card compiled-card">
+              <div class="node-header">
+                <span class="node-step cyan">02</span>
+                <div>
+                  <h4>AGENT 2: DSPY ADJUDICATOR</h4>
+                  <span class="node-sub cyan">CROSS-NODE COT ALIGNED</span>
+                </div>
+              </div>
+              <div class="node-body">
+                <div class="node-data-hdr cyan-text">VERIFIED POLICY CLAUSE:</div>
+                <pre class="node-json-box cyan-tint" id="navy-b-node2"></pre>
+              </div>
+              <div class="node-alert cyan-text">✓ Locks onto invariant; enforces strict Clause 4.2 rejection</div>
+            </div>
+
+            <div class="chain-connector pass-arrow">➔</div>
+
+            <!-- Node 3 -->
+            <div class="agent-node-card compiled-card">
+              <div class="node-header">
+                <span class="node-step cyan">03</span>
+                <div>
+                  <h4>AGENT 3: DSPY DISPATCHER</h4>
+                  <span class="node-sub cyan">CALIBRATED GATEWAY DISPATCHER</span>
+                </div>
+              </div>
+              <div class="node-body">
+                <div class="node-data-hdr cyan-text">EXECUTED TOOL TRANSACTION:</div>
+                <pre class="node-json-box cyan-tint" id="navy-b-node3"></pre>
+              </div>
+              <div class="node-alert cyan-text">✓ PROTECTED: Fires reject_dispute; 0 financial loss</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Old-Fashioned Mechanical / Analog Loader Toast -->
+    <div id="toast-banner" class="mechanical-loader-modal hidden">
+      <div class="loader-chassis">
+        <div class="loader-bezel-hdr">
+          <span class="led-blink"></span>
+          <span id="loader-title-text">TELEPROMPTER COMPILATION SEQUENCE IN PROGRESS</span>
+        </div>
+        
+        <div class="tape-reel-animation">
+          <div class="reel reel-left">
+            <div class="spoke"></div><div class="spoke"></div><div class="spoke"></div>
+          </div>
+          <div class="tape-ribbon">
+            <div class="tape-punch-tape" id="punch-tape-text">>>> JOINTLY TRACING MULTI-AGENT HANDOFFS >>> OPTIMIZING INTER-NODE AST >>></div>
+          </div>
+          <div class="reel reel-right">
+            <div class="spoke"></div><div class="spoke"></div><div class="spoke"></div>
+          </div>
+        </div>
+
+        <div class="stepper-bar-frame">
+          <div class="stepper-fill" id="stepper-fill"></div>
+        </div>
+
+        <div class="loader-terminal-log" id="toast-msg">
+          INITIATING COMPILATION PASS...
+        </div>
+      </div>
+    </div>
+
+    <!-- Technical AST Prompt Inspector Modal -->
+    <div id="prompt-modal" class="modal-backdrop hidden" onclick="closePromptModal(event)">
+      <div class="technical-slate" onclick="event.stopPropagation()">
+        <div class="slate-header">
+          <div class="slate-title">
+            <span class="mono-symbol">⚙</span>
+            <h2>COMPARATIVE DISASSEMBLY: HANDCRAFTED STRING vs DSPy AST</h2>
+          </div>
+          <button class="slate-close-btn" onclick="closePromptModal()">[ESC / CLOSE]</button>
+        </div>
+        <div class="slate-split">
+          <div class="slate-pane">
+            <div class="pane-tag">SPECIMEN A: BRITTLE HANDCRAFTED PROMPT (HUMAN GUESSWORK)</div>
+            <pre class="vintage-code" id="modal-vanilla-prompt"></pre>
+          </div>
+          <div class="slate-pane pane-highlight">
+            <div class="pane-tag green">SPECIMEN B: DSPy COMPILED PROMPT (SYNTHESIZED FEW-SHOTS)</div>
+            <pre class="vintage-code green" id="modal-dspy-prompt"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Chassis Tag -->
+    <footer class="console-footer">
+      <div class="footer-block">
+        <span>ARCHITECTURAL MONOREPO: <a href="file:///c:/Desktop/new-workspace/my-cute-agents/dspy-self-tuning-agent">onion-agents/dspy-self-tuning-agent</a></span>
+        <span>•</span>
+        <span>FRAMEWORK: STANFORD DSPy 3.4.1</span>
+        <span>•</span>
+        <span>MODES: MODEL_SWAP_HEALING + MULTI_AGENT_CASCADE</span>
+      </div>
+      <div class="live-status-pill">LIVE GROQ API ACTIVE</div>
+    </footer>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
